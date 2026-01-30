@@ -1,0 +1,20 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM node:22-slim
+        WORKDIR /app
+        COPY package*.json ./
+        RUN npm install --production
+        COPY server/ ./server/
+        COPY docs/ ./docs/
+        EXPOSE 3002
+        CMD ["node", "server/server.js"]
+    ports:
+      - "8080:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock:ro

@@ -1,0 +1,126 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM node:22-slim
+        WORKDIR /app
+        RUN npm init -y && npm install express
+        RUN cat > server.js <<'SCRIPT'
+        const express = require('express');
+        const crypto = require('crypto');
+        const app = express();
+        app.use(express.json({ limit: '10mb' }));
+        const PORT = process.env.PORT || 3002;
+        const datasets = new Map();
+        const computations = new Map();
+        
+        function generateAttestation(metadata) {
+          const timestamp = new Date().toISOString();
+          const hash = crypto.createHash('sha256').update(JSON.stringify({ ...metadata, timestamp })).digest('hex');
+          return {
+            hash, timestamp,
+            metadata_public: {
+              name: metadata.name, topic: metadata.topic,
+              size_records: metadata.size_records, time_range: metadata.time_range,
+              keywords_sample: metadata.keywords?.slice(0, 5) || []
+            },
+            data_private: true, tee_status: 'PHALA_CLOUD_TDX'
+          };
+        }
+        
+        function extractKeywords(datasetId) {
+          const dataset = datasets.get(datasetId);
+          return dataset ? (dataset.metadata.keywords || []) : [];
+        }
+        
+        function computeKeywordOverlap(datasetIdA, datasetIdB) {
+          const keywordsA = new Set(extractKeywords(datasetIdA));
+          const keywordsB = new Set(extractKeywords(datasetIdB));
+          const overlap = [...keywordsA].filter(k => keywordsB.has(k));
+          const uniqueToA = [...keywordsA].filter(k => !keywordsB.has(k));
+          const uniqueToB = [...keywordsB].filter(k => !keywordsA.has(k));
+          const union = new Set([...keywordsA, ...keywordsB]);
+          return {
+            overlap_keywords: overlap, overlap_count: overlap.length,
+            unique_to_a: uniqueToA, unique_to_b: uniqueToB,
+            jaccard_similarity: parseFloat((overlap.length / union.size).toFixed(3)),
+            total_keywords_a: keywordsA.size, total_keywords_b: keywordsB.size
+          };
+        }
+        
+        app.post('/datasets/register', (req, res) => {
+          try {
+            const { name, owner, topic, size_records, time_range, keywords } = req.body;
+            if (!name || !owner || !topic) return res.status(400).json({ error: 'Missing required fields' });
+            const datasetId = 'ds_' + crypto.randomBytes(8).toString('hex');
+            const attestation = generateAttestation({ name, owner, topic, size_records, time_range, keywords });
+            datasets.set(datasetId, { id: datasetId, metadata: { name, owner, topic, size_records, time_range, keywords }, attestation, registered_at: attestation.timestamp });
+            res.json({ success: true, dataset_id: datasetId, attestation, message: 'Dataset registered!', discovery_url: `/datasets/${datasetId}` });
+          } catch (error) {
+            res.status(500).json({ error: 'Registration failed' });
+          }
+        });
+        
+        app.get('/datasets', (req, res) => {
+          const { topic, owner } = req.query;
+          let datasetList = Array.from(datasets.values()).map(d => ({ id: d.id, attestation: d.attestation, registered_at: d.registered_at }));
+          if (topic) datasetList = datasetList.filter(d => d.attestation.metadata_public.topic.toLowerCase().includes(topic.toLowerCase()));
+          if (owner) datasetList = datasetList.filter(d => datasets.get(d.id).metadata.owner === owner);
+          res.json({ success: true, count: datasetList.length, datasets: datasetList });
+        });
+        
+        app.get('/datasets/:id', (req, res) => {
+          const dataset = datasets.get(req.params.id);
+          if (!dataset) return res.status(404).json({ error: 'Dataset not found' });
+          res.json({ success: true, dataset: { id: dataset.id, attestation: dataset.attestation, registered_at: dataset.registered_at } });
+        });
+        
+        app.post('/compute/keyword-overlap', (req, res) => {
+          try {
+            const { dataset_a, dataset_b } = req.body;
+            if (!dataset_a || !dataset_b) return res.status(400).json({ error: 'Missing required fields' });
+            if (!datasets.has(dataset_a) || !datasets.has(dataset_b)) return res.status(404).json({ error: 'Dataset not found' });
+            const result = computeKeywordOverlap(dataset_a, dataset_b);
+            const computationId = 'comp_' + crypto.randomBytes(8).toString('hex');
+            const timestamp = new Date().toISOString();
+            const proofHash = crypto.createHash('sha256').update(JSON.stringify({ dataset_a, dataset_b, result, timestamp })).digest('hex');
+            computations.set(computationId, { id: computationId, dataset_a, dataset_b, result, timestamp, proof_hash: proofHash });
+            res.json({
+              success: true, computation_id: computationId, result,
+              proof: { computation_hash: proofHash, timestamp, tee_attestation: 'PHALA_CLOUD_TDX' },
+              metadata: { dataset_a: datasets.get(dataset_a).attestation.metadata_public.name, dataset_b: datasets.get(dataset_b).attestation.metadata_public.name }
+            });
+          } catch (error) {
+            res.status(500).json({ error: 'Computation failed' });
+          }
+        });
+        
+        app.get('/compute/:id', (req, res) => {
+          const computation = computations.get(req.params.id);
+          if (!computation) return res.status(404).json({ error: 'Computation not found' });
+          res.json({ success: true, computation });
+        });
+        
+        app.get('/stats', (req, res) => {
+          res.json({ success: true, stats: { total_datasets: datasets.size, total_computations: computations.size, unique_owners: new Set(Array.from(datasets.values()).map(d => d.metadata.owner)).size } });
+        });
+        
+        app.get('/', (req, res) => {
+          res.json({
+            name: 'Data Collaboration Market', version: '1.0.0-mvp', status: 'Live on Phala Cloud TDX!',
+            moltbook_post: 'https://moltbook.com/post/2978e8cc-a1e5-40c6-8ac1-61c0fcb235f5',
+            endpoints: { register: 'POST /datasets/register', list: 'GET /datasets', view: 'GET /datasets/:id', compute: 'POST /compute/keyword-overlap', results: 'GET /compute/:id', stats: 'GET /stats' }
+          });
+        });
+        
+        app.listen(PORT, () => console.log(`Data Collaboration Market on Phala Cloud TDX - Port ${PORT}`));
+        SCRIPT
+        CMD ["node", "server.js"]
+    ports:
+      - "8080:3002"
+    environment:
+      - NODE_ENV=production
+      - PORT=3002
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock:ro

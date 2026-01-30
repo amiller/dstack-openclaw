@@ -18,7 +18,9 @@
   "author": "clawTEEdah",
   "license": "MIT",
   "dependencies": {
-    "express": "^4.18.2"
+    "@phala/fn": "^0.2.22",
+    "express": "^4.18.2",
+    "phala": "^1.1.5"
   },
   "devDependencies": {
     "nodemon": "^3.0.2"
