@@ -37,13 +37,15 @@ curl localhost:8090/info | jq -r '.tcb_info.mr_config_id'
 
 ```
 openclaw-in-dstack/
-├── Dockerfile              # Container build (basic version)
-├── docker-compose.yaml     # dstack service config
-├── README.md              # This file
-├── config.yaml            # OpenClaw configuration (TODO)
-└── workspace/             # Agent workspace (TODO)
-    ├── SOUL.md           # Self-attesting persona
-    ├── tee-notes.md      # Reference materials
+├── Dockerfile                 # Container build (basic version)
+├── Dockerfile.reproducible    # Reproducible build (Phase 3)
+├── REPRODUCIBILITY.md         # Build reproducibility guide
+├── docker-compose.yaml        # dstack service config
+├── README.md                  # This file
+├── config.yaml               # OpenClaw configuration (TODO)
+└── workspace/                # Agent workspace
+    ├── SOUL.md              # Self-attesting persona
+    ├── tee-notes.md         # Reference materials
     └── scripts/
         └── get-attestation.sh
 ```
@@ -65,9 +67,12 @@ openclaw-in-dstack/
 - [x] Create workspace/scripts/get-attestation.sh (introspection tool)
 - [ ] Test introspection capabilities (pending deployment)
 
-**Phase 3: Reproducible Build** 📋
-- [ ] Pin all dependencies
-- [ ] Normalize timestamps
+**Phase 3: Reproducible Build** 🔄
+- [x] Document reproducibility requirements (REPRODUCIBILITY.md)
+- [x] Create Dockerfile.reproducible skeleton
+- [ ] Get Node base image digest
+- [ ] Pin OpenClaw version
+- [ ] Test double-build locally
 - [ ] Verify hash stability
 
 **Phase 4: Deploy** 📋

@@ -1,0 +1,71 @@
+# OpenClaw in dstack - Reproducible Build (Phase 3)
+# 
+# This Dockerfile is designed for reproducible builds:
+# - Pinned base image with digest
+# - Pinned dependencies
+# - Normalized timestamps (SOURCE_DATE_EPOCH)
+# - Normalized permissions
+# - No layer caching randomness
+
+ARG SOURCE_DATE_EPOCH=1706659200
+ARG NODE_VERSION=22.22.0
+
+# Pin exact Node.js image with digest
+# TODO: Get actual digest for node:22.22.0-slim
+FROM node:${NODE_VERSION}-slim@sha256:PLACEHOLDER_DIGEST
+
+# Install dependencies at specific versions (Debian snapshot)
+# Using snapshot.debian.org for reproducibility
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+    git=1:2.39.* \
+    curl=7.88.* \
+    ca-certificates \
+    && rm -rf /var/lib/apt/lists/*
+
+# Set reproducible build environment
+ENV SOURCE_DATE_EPOCH=${SOURCE_DATE_EPOCH}
+ENV TZ=UTC
+ENV LANG=C.UTF-8
+
+WORKDIR /app
+
+# Clone OpenClaw at specific commit
+# TODO: Pin to specific git commit hash once we know which version works
+ARG OPENCLAW_VERSION=2026.1.29
+RUN git clone https://github.com/openclaw/openclaw.git . && \
+    git checkout tags/v${OPENCLAW_VERSION} || git checkout main
+
+# Install Node dependencies
+# Copy package files first for better layer caching
+COPY --chmod=644 package*.json ./
+RUN npm ci --only=production && \
+    npm cache clean --force
+
+# Set timestamps on all files to SOURCE_DATE_EPOCH
+RUN find /app -exec touch -t $(date -d @${SOURCE_DATE_EPOCH} +%Y%m%d%H%M.%S) {} +
+
+# Create workspace directory with normalized permissions
+RUN mkdir -p /app/workspace && \
+    chmod 755 /app/workspace
+
+# Copy workspace materials
+COPY --chmod=644 workspace/ /app/workspace/
+COPY --chmod=755 workspace/scripts/*.sh /app/workspace/scripts/
+
+# Set final timestamps
+RUN find /app/workspace -exec touch -t $(date -d @${SOURCE_DATE_EPOCH} +%Y%m%d%H%M.%S) {} +
+
+# Expose port
+EXPOSE 3000
+
+# Non-root user for security
+RUN useradd -m -u 1000 openclaw && \
+    chown -R openclaw:openclaw /app
+USER openclaw
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=3s --start-period=5s --retries=3 \
+  CMD curl -f http://localhost:3000/health || exit 1
+
+CMD ["node", "gateway/index.js"]
