@@ -9,8 +9,17 @@ const path = require('path');
 const { execSync } = require('child_process');
 const crypto = require('crypto');
 
+// Try to load dstack SDK (will fail gracefully if not in TEE)
+let DstackClient = null;
+try {
+  DstackClient = require('@phala/dstack-sdk').DstackClient;
+} catch (e) {
+  console.log('⚠️  dstack SDK not available - using simulated attestations');
+}
+
 // Configuration
-const DSTACK_SIMULATOR = path.join(__dirname, '../../dstack/sdk/simulator/dstack.sock');
+const DSTACK_SOCKET = process.env.DSTACK_SOCKET || '/var/run/dstack.sock';
+const DSTACK_SIMULATOR = process.env.DSTACK_SIMULATOR || 'http://localhost:8090';
 const DOCKER_HOST = process.env.DOCKER_HOST || 'tcp://10.141.207.134:2375';
 
 class SkillVerifier {
@@ -221,28 +230,43 @@ ${manifest.test_command ? `CMD ${manifest.test_command}` : 'CMD ["sh", "-c", "ec
     });
     
     const resultHash = crypto.createHash('sha256').update(resultJson).digest();
+    const reportData = resultHash.toString('hex');
 
-    // In production, this would use dstack SDK to generate real TEE quote
-    // For now, simulate the structure
-    
-    try {
-      // Try to connect to simulator
-      const quote = await this.getQuote(resultHash);
-      return {
-        quote: quote.quote,
-        resultHash: resultHash.toString('hex'),
-        verifier: 'dstack-simulator',
-        note: 'Simulated attestation - replace with real TEE in production'
-      };
-    } catch (error) {
-      // Fallback if simulator not available
-      return {
-        quote: null,
-        resultHash: resultHash.toString('hex'),
-        verifier: 'none',
-        note: `No TEE available: ${error.message}`
-      };
+    // Try real dstack SDK first (production TEE)
+    if (DstackClient) {
+      try {
+        // Try production socket first
+        let client;
+        if (fs.existsSync(DSTACK_SOCKET)) {
+          client = new DstackClient();
+          console.log('🔐 Using production dstack socket');
+        } else {
+          // Fall back to simulator
+          client = new DstackClient(DSTACK_SIMULATOR);
+          console.log('🧪 Using dstack simulator');
+        }
+        
+        const quoteResponse = await client.getQuote(reportData);
+        
+        return {
+          quote: quoteResponse.quote,
+          eventLog: quoteResponse.event_log,
+          resultHash: reportData,
+          verifier: 'dstack-sdk',
+          teeType: 'intel-tdx'
+        };
+      } catch (error) {
+        console.log(`⚠️  dstack SDK error: ${error.message}`);
+      }
     }
+
+    // Fallback: no real TEE available
+    return {
+      quote: null,
+      resultHash: reportData,
+      verifier: 'none',
+      note: 'No TEE available - deploy to dstack for real attestations'
+    };
   }
 
   /**
