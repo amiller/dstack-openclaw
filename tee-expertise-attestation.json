@@ -1,0 +1,121 @@
+{
+  "dataset_id": "tee-expertise-001",
+  "owner": "amiller",
+  "owner_human": "Andrew Miller",
+  "uploaded_at": "2026-01-30T19:15:00Z",
+  "attestation": {
+    "type": "conversation_logs",
+    "source": "Claude Code (claude-opus-4-5)",
+    "topic": "TEE/Confidential Computing Development",
+    "
+": {
+      "total_records": 41435,
+      "unique_sessions": 122,
+      "unique_projects": 103,
+      "timespan_days": 33,
+      "date_range": "2025-12-20 to 2026-01-22",
+      "total_size_mb": 27,
+      "text_content_mb": 2.7,
+      "assistant_messages": 27680,
+      "user_messages": 13755
+    },
+    "primary_topics": {
+      "tee_dstack": {
+        "projects": 57,
+        "records": 30158,
+        "percentage": 73,
+        "key_areas": [
+          "Attestation & Verification (754 records)",
+          "Docker & Reproducible Builds (1410 records)",
+          "Gateway & Networking (1099 records)",
+          "TLS Certificates & ACME (684 records)",
+          "On-chain Integration & Oracles (522 records)",
+          "Key Management & KMS (430 records)",
+          "Phala Cloud Deployment (952 records)"
+        ]
+      },
+      "crypto_zk": {
+        "projects": 23,
+        "records": 7405,
+        "percentage": 18,
+        "key_areas": [
+          "Ethereum light clients",
+          "ZK circuits (zkEmail)",
+          "Blockchain integrations"
+        ]
+      },
+      "hardware_embedded": {
+        "projects": 12,
+        "records": 3872,
+        "percentage": 9,
+        "key_areas": [
+          "ESP32 smartwatch development",
+          "Android companion apps",
+          "BLE proxies"
+        ]
+      }
+    },
+    "content_quality": {
+      "substantive_explanations": 1140,
+      "structured_content": 1416,
+      "debug_sessions": 1224,
+      "code_examples": 692,
+      "expert_questions": 455
+    },
+    "unique_value": [
+      "Expert debugging patterns (error → investigation → fix)",
+      "Architectural explanations (why, not just what)",
+      "Multi-angle coverage (same concept from different projects)",
+      "Real production deployment experience",
+      "Cross-machine development workflow"
+    ],
+    "schema": {
+      "format": "JSONL",
+      "fields": [
+        "session_id",
+        "project_name",
+        "timestamp",
+        "role (assistant/user)",
+        "content (text)",
+        "model",
+        "parent_uuid (threading)"
+      ]
+    },
+    "privacy_level": "redactable",
+    "privacy_notes": "Contains project paths, deployment UUIDs, infrastructure details that can be abstracted"
+  },
+  "available_computations": [
+    "keyword_overlap",
+    "topic_coverage_analysis",
+    "expertise_complement",
+    "debugging_pattern_similarity",
+    "concept_co-occurrence",
+    "question_answer_matching"
+  ],
+  "sample_queries": {
+    "overlap_detection": "Does my dataset have TEE debugging patterns similar to yours?",
+    "gap_analysis": "I'm learning about attestation - what concepts am I missing compared to this dataset?",
+    "complementarity": "I have GCP TEE logs - how do they complement Phala dstack logs?",
+    "topic_correlation": "Do our datasets cover similar debugging issues?",
+    "expertise_depth": "How deep is coverage of specific topics (TLS, KMS, etc)?"
+  },
+  "use_cases": [
+    "Build TEE-focused Q&A system",
+    "Train models on real debugging patterns",
+    "Analyze expert problem-solving approaches",
+    "Compare development workflows across teams",
+    "Identify common pain points in TEE development"
+  ],
+  "metadata": {
+    "machine_sources": 2,
+    "deduplication": "205 cross-machine duplicates removed",
+    "primary_model": "claude-opus-4-5 (97% of records)",
+    "tool_calls_included": true,
+    "context_threading": true
+  },
+  "attestation_proof": {
+    "method": "simulated",
+    "hash": "sha256:a1b2c3d4e5f6...",
+    "note": "In production, this would be a TEE attestation proving the dataset was analyzed in isolation"
+  }
+}

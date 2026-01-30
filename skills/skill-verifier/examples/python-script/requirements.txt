@@ -1,0 +1,4 @@
+# No external dependencies for this simple example
+# In a real skill, you might have:
+# requests>=2.28.0
+# beautifulsoup4>=4.11.0

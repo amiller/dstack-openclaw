@@ -1,0 +1,12 @@
+{
+  "name": "node-example-skill",
+  "version": "1.0.0",
+  "description": "Example Node.js skill",
+  "main": "index.js",
+  "scripts": {
+    "test": "node test.js"
+  },
+  "keywords": ["skill", "example"],
+  "author": "",
+  "license": "MIT"
+}
