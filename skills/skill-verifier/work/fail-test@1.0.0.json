@@ -1,0 +1,23 @@
+{
+  "skillId": "fail-test@1.0.0",
+  "timestamp": "2026-01-30T18:32:01.087Z",
+  "duration": 1056,
+  "result": {
+    "passed": false,
+    "exitCode": 1,
+    "stdout": "Test failed!\n",
+    "stderr": "Command failed: docker run --rm skill-test-1769797920036",
+    "duration": 260
+  },
+  "attestation": {
+    "quote": "0x8dc1dce970f759dcfec1bdd229f3c94de88ae528fda2d3f16dabff7923debf4977367cb87be21667c120e793242f247bae80b42567f928205d3199fd00911c4b",
+    "resultHash": "7257f62589ae080ec354262ea65bb267a97947b69d0559d116ffad01cc68044e",
+    "verifier": "dstack-simulator",
+    "note": "Simulated attestation - replace with real TEE in production"
+  },
+  "manifest": {
+    "name": "fail-test",
+    "version": "1.0.0",
+    "description": "Failing test skill"
+  }
+}

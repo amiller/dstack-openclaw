@@ -1,0 +1,23 @@
+{
+  "skillId": "hello-test@1.0.0",
+  "timestamp": "2026-01-30T18:31:52.696Z",
+  "duration": 5472,
+  "result": {
+    "passed": true,
+    "exitCode": 0,
+    "stdout": "Test passed!\n",
+    "stderr": "",
+    "duration": 296
+  },
+  "attestation": {
+    "quote": "0xeecfead57c12701fcf2276cf0290003d4fcc21cc380fb46922471b3d77ef0e229cbd86372104848084a5cb682bcea546aee633cf53c7b23f7bbfd98df17d4368",
+    "resultHash": "25e81683f8ed238689635b28de1f6302d02e9669b3f81a3ba9d9c93590343baa",
+    "verifier": "dstack-simulator",
+    "note": "Simulated attestation - replace with real TEE in production"
+  },
+  "manifest": {
+    "name": "hello-test",
+    "version": "1.0.0",
+    "description": "Simple test skill"
+  }
+}
