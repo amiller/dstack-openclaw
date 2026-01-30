@@ -1,0 +1,35 @@
+# OpenClaw in dstack - Basic Compose File
+# Format: dstack-compatible docker-compose v2
+
+version: '2'
+
+services:
+  openclaw:
+    build: .
+    ports:
+      - "3000:3000"
+    environment:
+      # API keys (operator-controlled - we're honest about this)
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - OPENAI_API_KEY=${OPENAI_API_KEY:-}
+      
+      # OpenClaw config
+      - NODE_ENV=production
+      - OPENCLAW_LOG_LEVEL=info
+      
+    volumes:
+      # Mount dstack socket for attestation
+      - /var/run/dstack.sock:/var/run/dstack.sock:ro
+      
+      # Workspace persistence (in-container for now)
+      # TODO: Decide on persistence strategy
+      
+    restart: unless-stopped
+    
+    # Security context
+    security_opt:
+      - no-new-privileges:true
+    
+    # Resource limits (optional)
+    mem_limit: 2g
+    cpus: 1.0
