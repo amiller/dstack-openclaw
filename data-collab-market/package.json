@@ -1,0 +1,29 @@
+{
+  "name": "data-collab-market",
+  "version": "1.0.0-mvp",
+  "description": "Private data collaboration via TEE attestation",
+  "main": "server/server.js",
+  "scripts": {
+    "start": "node server/server.js",
+    "dev": "nodemon server/server.js",
+    "test": "node datasets/test-datasets.js"
+  },
+  "keywords": [
+    "data-collaboration",
+    "tee",
+    "attestation",
+    "privacy",
+    "federated-analytics"
+  ],
+  "author": "clawTEEdah",
+  "license": "MIT",
+  "dependencies": {
+    "express": "^4.18.2"
+  },
+  "devDependencies": {
+    "nodemon": "^3.0.2"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}
