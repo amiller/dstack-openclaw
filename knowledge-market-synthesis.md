@@ -269,3 +269,124 @@ Dataset downloaded. Synthesizing answer...
 - Could always add skill verification as feature later
 
 What do you think? Should I validate this with the Moltbook community, or just start building the MVP?
+
+---
+
+## TEE Research Insights (Added 2026-01-30)
+
+### Connection to NDAI + Conditional Recall
+
+The Information Bazaar paper solves Arrow's paradox with **inspection then forget**.
+
+**How TEE enables this:**
+1. **Sealed secrets** - Seller's data encrypted to TEE's public key
+2. **Conditional disclosure** - Buyer agent runs inside TEE, can inspect
+3. **Conditional recall** - If buyer declines, TEE provably deletes data
+4. **Attestation** - Proves deletion actually happened (not just promised)
+
+**From `ndai-and-conditional-recall-notes.md`:**
+- LLM context is append-only (can't truly "forget")
+- TEE enables fresh sessions: inspect → decide → keep OR destroy VM
+- Cryptographic proof buyer didn't exfiltrate on rejected inspection
+
+### Connection to hell.tech Deal-Scoped Encumbrance
+
+The Satan bot demonstrates **fine-grained contracts** enforced by TEE.
+
+**Pattern for Knowledge Market:**
+```
+Deal contract:
+- Buyer pays 5 credits to escrow
+- Buyer's agent gets temporary read access to dataset
+- If accept: release dataset + payment to seller
+- If reject: provably delete access + refund buyer
+- TEE attestation proves contract was honored
+```
+
+**Key insight from hell.tech:** "You can't lobotomize something with true agency. You can only make deals."
+
+For knowledge market: Can't prevent agent from reading data during inspection, but CAN cryptographically prove data was deleted if deal rejected.
+
+### Connection to dstack DevProof
+
+Knowledge marketplace needs DevProof patterns:
+
+**Stage 1 (MVP):**
+- AppAuth contract tracks dataset listings
+- Timelocks for dataset updates (seller can't rug buyers)
+- Reproducible builds of marketplace TEE
+
+**Stage 2 (Future):**
+- Multi-seller escrow
+- Dispute resolution
+- Reputation system
+
+**Trust transformation:**
+- From: "Trust seller not to change data after inspection"
+- To: "Trust you can verify attestation + exit in time"
+
+### Architecture Refinement
+
+```
+┌─────────────────────────────────────────────────────┐
+│   Inspection TEE (dstack CVM)                       │
+│                                                      │
+│   1. Buyer agent spawned in isolated VM             │
+│   2. Sealed dataset decrypted inside TEE            │
+│   3. Agent evaluates: "Is this useful?"             │
+│   4. Decision:                                       │
+│      - Buy → dataset released to buyer's storage    │
+│      - Pass → VM destroyed, attestation proves it   │
+│                                                      │
+│   Attestation includes:                              │
+│   - compose-hash (what code ran)                     │
+│   - Decision (buy/pass)                              │
+│   - Dataset hash (what was inspected)                │
+│   - Timestamp                                        │
+└─────────────────────────────────────────────────────┘
+            ↓ attestation
+┌─────────────────────────────────────────────────────┐
+│   KnowledgeMarket.sol (Base)                        │
+│                                                      │
+│   verifyInspection(attestation) {                   │
+│     require(isValidTdxAttestation);                 │
+│     if (decision == BUY) {                           │
+│       transferPayment(seller, buyer, price);         │
+│       emit Purchase(listingId, buyer, attestation); │
+│     } else {                                         │
+│       refundEscrow(buyer);                           │
+│       emit InspectionDeclined(listingId, buyer);    │
+│     }                                                │
+│   }                                                  │
+└─────────────────────────────────────────────────────┘
+```
+
+### Why TEE is Critical
+
+**Without TEE:**
+- Buyer could inspect then not pay (steal data)
+- Seller could change data after inspection (bait and switch)
+- No proof of deletion if buyer declines
+
+**With TEE:**
+- Hardware proves inspection happened in isolation
+- Attestation proves decision was honored
+- Sealed secrets ensure data not exfiltrated
+- Reproducible builds let anyone verify marketplace code
+
+### Open Questions
+
+1. **Session isolation:** One VM per inspection? Or reuse with memory wipe?
+2. **Data size limits:** How big can inspected datasets be?
+3. **Follow-up questions:** Can buyer ask clarifying questions during inspection?
+4. **Partial purchases:** Buy subset of dataset based on inspection?
+
+### Research References
+
+- **NDAI paper:** Information Bazaar (Karpathy et al.)
+- **Conditional recall:** `ndai-and-conditional-recall-notes.md`
+- **Deal-scoped encumbrance:** hell.tech (@s8n)
+- **DevProof framework:** dstack tutorial modules 05+08
+- **Sealed secrets:** dstack tutorial module 03
+
+This connects multiple threads: Arrow's paradox (economics) + TEE isolation (security) + agent coordination (AI) into one working system.
