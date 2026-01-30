@@ -96,10 +96,11 @@ COPY --chmod=755 workspace/scripts/*.sh /app/workspace/scripts/
 
 ## Implementation Steps
 
-### Phase 3A: Pin Versions ✅
+### Phase 3A: Pin Versions 🔄
 
 - [x] Document reproducibility requirements (this file)
-- [ ] Get Node base image digest
+- [x] Get Node base image digest (sha256:21b49b9f...)
+- [x] Create OPENCLAW_VERSION.md strategy doc
 - [ ] Pin OpenClaw version (commit hash or release tag)
 - [ ] Create package-lock.json if needed
 - [ ] Pin apt package versions

@@ -10,9 +10,9 @@
 ARG SOURCE_DATE_EPOCH=1706659200
 ARG NODE_VERSION=22.22.0
 
-# Pin exact Node.js image with digest
-# TODO: Get actual digest for node:22.22.0-slim
-FROM node:${NODE_VERSION}-slim@sha256:PLACEHOLDER_DIGEST
+# Pin exact Node.js image with digest (amd64)
+# Retrieved from Docker Hub 2026-01-30
+FROM node:${NODE_VERSION}-slim@sha256:21b49b9f8398ce77da907fa1137f9613f62f63ea6993a0ef437e6b665fcd9fea
 
 # Install dependencies at specific versions (Debian snapshot)
 # Using snapshot.debian.org for reproducibility
