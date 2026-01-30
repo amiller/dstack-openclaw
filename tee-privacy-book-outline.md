@@ -64,6 +64,15 @@
    - Operator can't read secret keys
    - How to verify Hermes attestation yourself
 
+7a. **Interactive Demo: OpenClaw-in-dstack**
+   - Self-attesting TEE agent (pedagogical reflexivity)
+   - Agent that can explain its own encumbrance state
+   - Introspection tools: get-attestation.sh
+   - What's proven vs what's not (pedagogical honesty)
+   - Teaching TEE concepts through embodiment
+   - Live example: Chat with the agent, verify its attestation
+   - Hands-on: Deploy your own, modify SOUL.md, test introspection
+
 8. **Keys and Secrets**
    - KMS-derived keys (deterministic from attestation)
    - Secret storage in TEE memory
@@ -204,6 +213,7 @@
 
 **B. Code Examples**
 - All tutorial code (dstack-tutorial)
+- OpenClaw-in-dstack (self-attesting agent demo)
 - Skill verification scripts
 - AppAuth contract templates
 - Testing frameworks
