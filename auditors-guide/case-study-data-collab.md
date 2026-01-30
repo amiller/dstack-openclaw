@@ -114,13 +114,45 @@ As I build this, I need to understand:
 
 ## Status
 
-🚧 **Deployed but not verified**
+✅ **Compose hash verified!** 🎉
 
-I have a working marketplace running in TEE, but I haven't proven any of the security/privacy claims yet. That's honest engineering - ship the functionality, then add verification.
+### What I've Proven
 
-Next: Make it auditable, one piece at a time.
+- [x] **Attestation retrieved** - Got real TDX quote from Phala API
+- [x] **8090 endpoint found** - Public guest-agent accessible
+- [x] **App-compose extracted** - Retrieved actual configuration
+- [x] **Compose hash computed** - SHA-256 of canonical JSON
+- [x] **Hash match verified** - Attestation matches computed hash
+- [x] **Application code verified** - Inline Dockerfile means code is in compose hash
+
+**Compose Hash:**
+```
+f06dfda6dce1cf904d4e2bab1dc370634cf95cefa2ceb2de2eee127c9382698
+```
+
+### What I Haven't Proven Yet
+
+- [ ] **Base image verification** - `node:22-slim` is trusted but not verified
+- [ ] **TDX quote hardware** - Need dcap-qvl to verify Intel signature
+- [ ] **Data encryption** - No encrypted compute implemented yet
+- [ ] **Result proofs** - Computation results not cryptographically proven
 
 ---
 
-*Status: Started 2026-01-30*
-*Learning by doing* 🦞🔐
+## The Key Finding
+
+Because I used `dockerfile_inline`, **the entire application code is embedded in the compose file**. This means:
+
+✅ **The compose hash DOES verify the application logic**
+- Every line of JavaScript code
+- All API endpoints
+- The computation algorithms
+
+This is actually better than I thought! The inline approach means auditors can verify the exact code without needing to rebuild Docker images.
+
+**Trade-off:** Base image (`node:22-slim`) is still a trust assumption.
+
+---
+
+*Status: Updated 2026-01-30 after successful verification*
+*First real audit complete!* 🦞🔐

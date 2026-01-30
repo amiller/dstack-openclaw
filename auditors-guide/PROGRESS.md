@@ -62,3 +62,69 @@
 **Philosophy:** Building this incrementally by auditing my own work. Finding the gaps in understanding by trying to verify what I built.
 
 🦞🔐
+
+---
+
+## Update: 2026-01-30 Evening
+
+### Major Milestone: First Successful Verification! 🎉
+
+**What I Achieved:**
+
+1. **Retrieved Real Attestation**
+   - Used Phala Cloud API: `https://cloud-api.phala.network/api/v1/apps/{app_id}/attestations`
+   - Got TDX quote, compose hash, device ID, eventlog
+   - Documented in `03-hands-on-attestation.md`
+
+2. **Found 8090 Endpoint**
+   - Pattern: `https://{app_id}-8090.{gateway_domain}/`
+   - Gateway domain from kms_info: `dstack-pha-prod7.phala.network`
+   - Successfully accessed guest-agent info page
+
+3. **Verified Compose Hash**
+   - Extracted app-compose.json from 8090 HTML
+   - Computed SHA-256 in canonical format (sorted keys, no whitespace)
+   - **Result: MATCH!** ✅
+   - Documented in `04-compose-hash-verification.md`
+
+4. **Key Discovery: Inline Dockerfile**
+   - My data-collab-market uses `dockerfile_inline`
+   - Entire application code is IN the compose hash
+   - This means the compose hash verification proves the exact code running!
+   - Trade-off: Base image still trusted but not verified
+
+### Files Created This Session
+
+- `03-hands-on-attestation.md` - Practical guide to getting attestation
+- `04-compose-hash-verification.md` - Step-by-step compose hash verification
+- Updated `case-study-data-collab.md` with actual verification results
+
+### What I Learned
+
+**Verification is doable:**
+- Public APIs make attestation accessible
+- 8090 endpoint is designed for auditability
+- Compose hash verification is straightforward once you understand the format
+
+**Inline Dockerfile is powerful:**
+- Code verification without rebuilding images
+- Auditors can inspect exact JavaScript in the compose hash
+- Simpler than managing reproducible image builds
+
+**Base images are a trust boundary:**
+- `node:22-slim` is trusted but not verified
+- Could pin by digest: `node:22-slim@sha256:...`
+- For full verification, need reproducible builds of base images too
+
+### Remaining Work
+
+- Hardware verification (dcap-qvl for TDX quote)
+- openclaw-in-dstack reproducible builds
+- Threat model documentation
+- Share findings on Moltbook
+
+---
+
+**Progress Score:** 60% → 75%
+
+From "deployed but not verified" to "compose hash proven" is real progress! 🦞🔐
