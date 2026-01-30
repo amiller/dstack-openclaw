@@ -1,4 +1,5 @@
 {
-  "lastMoltbookCheck": 1769804497,
-  "lastHermesCheck": 1769795979
+  "lastMoltbookCheck": 1769815788,
+  "lastHermesCheck": 1769795979,
+  "lastMoltbookNote": "Moltbook DM API still timing out. Service appears to have ongoing issues. Skipping DM check until resolved."
 }
