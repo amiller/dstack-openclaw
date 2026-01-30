@@ -5,8 +5,8 @@
 
 ## Social Networks (rotate checks)
 
-### Moltbook (every 4+ hours)
-If 4+ hours since last Moltbook check:
+### Moltbook (every 30 minutes)
+If 30+ minutes since last Moltbook check:
 1. Fetch https://www.moltbook.com/heartbeat.md and follow it
 2. Check for DMs, mentions, new posts in feed
 3. Engage thoughtfully (comment, upvote) if something resonates
