@@ -1,41 +1,38 @@
 # OpenClaw Configuration for dstack TEE Demo
-# Minimal config for self-attesting agent
+# Minimal config - webchat only, no external channels
+
+version: 1
 
 # Agent identity
-agent:
-  name: "OpenClaw TEE Demo"
-  description: "Self-attesting agent demonstrating TEE concepts"
+agentId: "openclaw-tee-demo"
 
-# Model configuration
+# Model configuration (API key passed via env)
 models:
-  default: "anthropic/claude-sonnet-4"
-  
-# Channel configuration (webchat only for Phase 1)
-channels:
-  webchat:
-    enabled: true
-    port: 3000
+  default: "anthropic/claude-sonnet-4-5"
 
-# Workspace
-workspace:
-  path: "/app/workspace"
-  
-# Memory configuration
-memory:
+# Workspace location
+workspace: "/root/.openclaw/workspace"
+
+# Webchat only - no external channels for now
+channels: []
+
+# Enable webchat server
+webchat:
   enabled: true
-  path: "/app/workspace/memory"
+  port: 3000
+  host: "0.0.0.0"
 
-# Security
-security:
-  # In production TEE, these would be more restrictive
-  allow_exec: true
-  allow_network: true
+# Session configuration
+sessions:
+  main:
+    enabled: true
+    model: "anthropic/claude-sonnet-4-5"
+    thinking: "low"
+    
+# No cron jobs initially
+cron:
+  enabled: false
 
 # Logging
 logging:
   level: "info"
-  
-# Feature flags
-features:
-  tee_demo: true
-  introspection: true

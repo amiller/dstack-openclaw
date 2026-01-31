@@ -1,29 +1,35 @@
 # OpenClaw in dstack - Basic Version (Non-Reproducible)
-# This is Phase 1 - just get it working first
+# Phase 1: Get it working first, reproducibility comes later
 
 FROM node:22-slim
 
-# Install basic dependencies
+# Install dependencies
 RUN apt-get update && \
     apt-get install -y \
     git \
     curl \
     jq \
+    ca-certificates \
     && rm -rf /var/lib/apt/lists/*
 
-# Create app directory
-WORKDIR /app
+# Install OpenClaw globally (simplest approach)
+RUN npm install -g openclaw
 
-# Clone OpenClaw (for now, we'll use latest)
-# TODO Phase 3: Pin specific commit for reproducibility
-RUN git clone https://github.com/openclaw/openclaw.git . && \
-    npm install
+# Create OpenClaw directories
+RUN mkdir -p /root/.openclaw/workspace && \
+    mkdir -p /root/.openclaw/agents/main/agent
 
-# Create workspace directory
-RUN mkdir -p /home/node/.openclaw/workspace
+# Copy workspace files (SOUL.md, tee-notes.md, scripts)
+COPY workspace/ /root/.openclaw/workspace/
 
-# Expose port for webchat
+# Copy OpenClaw config
+COPY config.yaml /root/.openclaw/openclaw.json
+
+# Expose webchat port
 EXPOSE 3000
 
-# Default command
-CMD ["node", "gateway/index.js"]
+# Expose dstack attestation endpoint
+EXPOSE 8090
+
+# Start OpenClaw gateway
+CMD ["openclaw", "gateway", "start", "--foreground"]
