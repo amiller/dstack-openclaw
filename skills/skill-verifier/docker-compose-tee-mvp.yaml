@@ -1,0 +1,86 @@
+services:
+  skill-verifier:
+    build:
+      context: .
+      dockerfile_inline: |
+        FROM node:20-alpine
+        WORKDIR /app
+        RUN npm init -y && npm install express @phala/dstack-sdk
+        RUN cat > server.js <<'ENDSCRIPT'
+        const express = require('express');
+        const app = express();
+        const PORT = process.env.PORT || 3000;
+
+        // Try to load dstack SDK
+        let DstackClient = null;
+        let dstackAvailable = false;
+        try {
+          DstackClient = require('@phala/dstack-sdk').DstackClient;
+          dstackAvailable = true;
+        } catch (e) {
+          console.log('dstack SDK not available');
+        }
+
+        app.use(express.json());
+
+        app.get('/health', (req, res) => {
+          res.json({
+            status: 'ok',
+            service: 'skill-verifier-tee-mvp',
+            tee: dstackAvailable,
+            timestamp: new Date().toISOString()
+          });
+        });
+
+        app.get('/info', async (req, res) => {
+          if (!dstackAvailable || !DstackClient) {
+            return res.status(503).json({ error: 'TEE not available' });
+          }
+
+          try {
+            const client = new DstackClient();
+            const info = await client.info();
+            res.json(info);
+          } catch (error) {
+            res.status(500).json({ error: error.message });
+          }
+        });
+
+        app.post('/attest', async (req, res) => {
+          if (!dstackAvailable || !DstackClient) {
+            return res.status(503).json({ error: 'TEE not available' });
+          }
+
+          try {
+            const { data } = req.body;
+            if (!data) {
+              return res.status(400).json({ error: 'Missing data field' });
+            }
+
+            const client = new DstackClient();
+            const quoteResponse = await client.getQuote(data);
+            
+            res.json({
+              success: true,
+              quote: quoteResponse.quote,
+              eventLog: quoteResponse.event_log,
+              reportData: data,
+              verifier: 'dstack-sdk',
+              teeType: 'intel-tdx'
+            });
+          } catch (error) {
+            res.status(500).json({ error: error.message });
+          }
+        });
+
+        app.listen(PORT, '0.0.0.0', () => {
+          console.log(\`Skill Verifier TEE MVP running on port \${PORT}\`);
+          console.log(\`TEE available: \${dstackAvailable}\`);
+        });
+        ENDSCRIPT
+        CMD ["node", "server.js"]
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000

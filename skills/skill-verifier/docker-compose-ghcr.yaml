@@ -1,0 +1,14 @@
+services:
+  skill-verifier:
+    image: ghcr.io/amiller/skill-verifier:latest
+    ports:
+      - "3000:3000"
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - DSTACK_SOCKET=/var/run/dstack.sock
+      - DOCKER_HOST=unix:///var/run/docker.sock
+    volumes:
+      - /var/run/dstack.sock:/var/run/dstack.sock
+      - /var/run/docker.sock:/var/run/docker.sock
+    restart: unless-stopped
