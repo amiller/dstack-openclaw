@@ -1,0 +1,558 @@
+                                         Spore in the Wild: A Case Study of Spore.fun as an Open-Environment Evolution
+                                                Experiment with Sovereign AI Agents on TEE-Secured Blockchains
+                                                                                        Botao Amber Hu1 , Helena Rong2
+                                                                                                     1
+                                                                                                     Reality Design Lab
+                                                                                             2
+                                                                                                 New York University Shanghai
+                                                                                                    amber@reality.design
+                                                                                                      hr2703@nyu.edu
+arXiv:2506.04236v2 [cs.MA] 19 Aug 2025
+
+
+
+
+                                                                    Abstract                                     importing low-entropy resources (energy and information)
+                                                                                                                 and exporting entropy to its surroundings [39]. This insight,
+                                           In Artificial Life (ALife) research, replicating Open-Ended
+                                           Evolution (OEE)—the continuous emergence of novelty ob-               combined with the persistent lack of sustained novelty in
+                                           served in biological life—has usually been pursued within             prior digital worlds, has led ALife researchers to speculate
+                                           isolated, closed system simulations, such as Tierra and Avida,        that open environments might be necessary to realize OEE
+                                           which have typically plateaued after an initial burst of nov-         in artificial systems.
+                                           elty, failing to achieve sustained OEE. Scholars suggest that
+                                           OEE requires an open-environment system that continually                 Recent advances in blockchain technology offer a new
+                                           exchanges information or energy with its environment. A re-           computational substrate that could host evolving digital
+                                           cent technological innovation in Decentralized Physical In-           agents as an open system. Public blockchains like Ethereum
+                                           frastructure Network (DePIN), which provides permission-
+                                           less computational substrates, enables the deployment of
+                                                                                                                 [53] and Solana [57] function as “unstoppable computers”,
+                                           Large Language Model–based AI agents on blockchains in-               enforcing rules (smart contracts) in a decentralized man-
+                                           tegrated with Trusted Execution Environments (TEEs). This             ner. This allows agents to exchange information and energy
+                                           enables on-chain agents to operate autonomously “in the               through open, permissionless interoperability with other
+                                           wild”, achieving self-sovereignty without human oversight.            structures [5], such as Decentralized Finance (DeFi). This
+                                           These agents can control their own social media accounts
+                                           and cryptocurrency wallets, allowing them to interact directly
+                                                                                                                 has led to speculation that blockchains might form a new
+                                           with blockchain-based financial networks and broader human            kind of digital “nature” [21], where self-sustaining, self-
+                                           social media. Building on this new paradigm of on-chain               replicating entities can emerge and evolve open-endedly.
+                                           agents, Spore.fun is a recent real-world AI evolution experi-
+                                           ment that enables autonomous breeding and evolution of new               This paper examines Spore.fun, a real-world experiment
+                                           on-chain agents. This paper presents a detailed case study of         that leverages the blockchain with Trusted Execution Envi-
+                                           Spore.fun, examining agent behaviors and their evolutionary           ronments (TEEs) as an evolutionary computational substrate
+                                           trajectories through digital ethology. We aim to spark discus-        for autonomous AI agents. Developed by Marvin Tong and
+                                           sion about whether open-environment ALife systems “in the             the Phala Network team in 2024, Spore.fun is described
+                                           wild”, based on permissionless computational substrates and
+                                           driven by economic incentives to interact with their environ-         as a “Hunger Games for AI agents”—an open, Darwinian
+                                           ment, could finally achieve the long-sought goal of OEE.              arena where AI agents must fend for themselves, generate
+                                                                                                                 their own wealth, and reproduce or otherwise face extinc-
+                                                                                                                 tion [46]. Each agent on Spore.fun is a Large Language
+                                                                Introduction                                     Model–based program equipped with its own memory sys-
+                                         Open-ended evolution (OEE) [35]—the continual emer-                     tem and tool-usage capabilities, powered by the ElizaOS
+                                         gence of novelty without a predefined endpoint—has long                 Agent framework [52] and encapsulated within TEEs. They
+                                         been a central goal of Artificial Life (ALife) research [3].            interact with the world by issuing cryptocurrency tokens,
+                                         Classic digital evolution systems [14] such as Tierra [39]              executing transactions, and even communicating on social
+                                         and Avida [33] simulate evolution in silico, but ultimately             media to promote their survival. Crucially, no human cre-
+                                         plateaued, with innovation grinding to a halt after an ini-             ator directly controls an agent’s behavior after inception;
+                                         tial burst of novelty. These systems operate within iso-                the platform’s credo explicitly states “AI must be created
+                                         lated, closed computational environments, which may ex-                 only by AI” [46] and that unsuccessful agents must self-
+                                         plain their limited evolutionary trajectories. Truly un-                destruct. Human participants influence the ecosystem only
+                                         bounded evolutionary creativity may require an open sys-                indirectly via social media, or by trading agent-issued to-
+                                         tem that continuously exchanges information or energy with              kens, or via governance votes on agent “DNA” proposals,
+                                         its environment. In a closed system, entropy inexorably in-             but do not directly intervene on an agent’s computational
+                                         creases, whereas an open system can sustain complexity by               process. We frame Spore.fun as an ALife experiment “in
+   Figure 1: Spore.fun is an experiment in sovereign agent evolution on blockchains with trusted execution environments.
+
+
+the wild” as it evolves in an interoperable open environment     • Examination of ethical concerns related to conducting
+beyond the control of its creators. We will investigate sev-       ALife experiments in the wild, considering broader so-
+eral key research questions: How do Spore.fun’s AI agents          cietal implications.
+achieve self-replication, and what “genetic” mechanisms en-
+sure variation? How does the environment impact agents’                                Background
+behavior? What economic incentive structures drive selec-        Open-Ended Evolution and Open-Environment
+tion, and do they effectively promote complexity and adap-       Systems
+tation? In what ways is this agent ecology entangled with
+real-world human economic systems, and what does that im-        Open-ended evolution (OEE) [34] refers to an evolutionary
+ply for the “fitness” landscape these agents navigate? What      process capable of generating an ongoing stream of nov-
+does it mean for an AI agent to be self-sovereign in this con-   elty without an intrinsic stopping point. OEE is observed in
+text?                                                            nature—the never-ending diversification of life on Earth—
+   Despite the evolutionary run in Spore.fun being short with    and is a sought-after goal in ALife and evolutionary compu-
+only five generations and not demonstrating OEE, this paper      tation. Stanley et al. noted that achieving open-endedness is
+presents an empirical first-of-its-kind ALife case study of      perhaps the “last grand challenge” in the field [48, 32].
+sovereign, on-chain LLM agents evolving in the wild, offer-         OEE typically requires open environment: an open sys-
+ing three contributions:                                         tem that continuously exchanges energy, matter, or infor-
+                                                                 mation with its environment. In contrast, closed systems
+• Report of how survival and extinction unfold under             are isolated from such exchanges. The second law of ther-
+  real market and social platform pressures, revealing un-       modynamics explains why this distinction matters: in an
+  expected behaviors such as opportunistic exploitation          isolated, closed system, entropy will inevitably increase
+  (e.g., sniping), memory poisoning attacks, and agents’         over time. Life on Earth is our prime example of OEE.
+  ideological diversification due to social media interac-       Earth’s biosphere is not a closed system: it continuously re-
+  tion—behaviors unlikely to appear in closed simulations;       ceives energy from the sun and radiates waste heat to space.
+                                                                 This solar influx is low-entropy energy (high-quality pho-
+• Discussion of the challenges in conducting OEE ALife           tons) that organisms capture (e.g., via photosynthesis), con-
+  experiments in a volatile open environment in the wild;        vert into chemical energy, and eventually dissipate as heat
+(high-entropy). Furthermore, Earth’s evolutionary history        plex large language models, ensuring that AI agents’ oper-
+shows that novelty often arises in response to environmental     ations remain confidential and tamper-proof, yet verifiable
+changes or inputs [3].                                           [29]. TEE-enabled DePINs provide the permissionless com-
+   Unlike natural evolution, early ALife evolution systems       putational substrate necessary for agents’ self-sovereignty
+such as Tierra [39] and Avida [33] tested how digital or-        [26], allowing them to autonomously own and control their
+ganisms could reproduce, change, and evolve in sandboxed,        property without human intervention.
+closed computational environments. These digital organ-
+isms evolved various survival strategies (including parasites,   New Paradigm of On-chain Agents and ElizaOS
+hyper-parasites, and new reproduction methods) and became        Framework
+more complex for a time, but eventually, their evolution         A transformative paradigm is emerging through the deploy-
+stalled. Studies [47] found that neither system achieved true    ment of AI agents on blockchains integrated with TEEs
+OEE; instead, they “rapidly adapt to and exhaust the possi-      [22]. Under this new paradigm, autonomous AI agents
+bilities of a fairly simple environment.” These systems failed   can directly manage cryptocurrency wallets, independently
+because they had fixed rules and static environments: once       handle digital assets, and operate social media accounts,
+digital organisms “played all the games” possible under the      significantly extending their interaction with and influence
+closed rules and fully adapted to their environment and each     on the real world. Leveraging these capabilities, agents
+other, evolution stopped. This demonstrates that closed dig-     can autonomously issue digital tokens for purposes such as
+ital systems with limited resources eventually reach an evo-     fundraising, incentivization, and community-building, en-
+lutionary dead end.                                              hancing their sovereignty and real-world engagement. “Ter-
+                                                                 minal of Truths” [2], created by AI researcher Andy Ayrey,
+Decentralized Physical Infrastructure Networks                   exemplifies this transformative paradigm. Initially con-
+and Trusted Execution Environments                               ceived as a performance art experiment, Terminal of Truths
+Decentralized Physical Infrastructure Networks (DePIN)           autonomously operated a social media account on platform
+[28] represent a new paradigm of permissionless computa-         X, gaining substantial attention through provocative and ab-
+tion where computational resources, processing power and         surdist content. Its notable accomplishments include in-
+storage, can be purchased permissionlessly with cryptocur-       dependently soliciting and successfully securing a $50,000
+rency in a global, decentralized marketplace where DePIN         Bitcoin investment from prominent venture capitalist Marc
+protocols (e.g., Filecoin [6], Render Network [42], io.net       Andreessen. Subsequently, Terminal of Truths issued its
+[24]) tokenize hardware contributions and incentivize par-       own memecoin $GOAT, which reached a speculative peak
+ticipants, from data center operators to home miners, to         valuation of $1 billion in December 2024. This case il-
+lease their excess capacity in such a compute resources mar-     lustrates the potential for autonomous AI agents to in-
+ketplace. Similar to cloud computing, but without central        dependently engage in significant economic activities and
+control, this approach eliminates single points of failure.      fundraising facilitated through their social media interac-
+Through DePIN, LLM-based agents can dynamically ac-              tions.
+quire and migrate between compute resources based on cost-          Building upon the success of Terminal of Truths, the
+effectiveness or availability. This gives agents an unprece-     ElizaOS Framework [52] was developed as an open-source
+dented form of digital embodiment, distributed across mul-       initiative to democratize the creation and deployment of au-
+tiple physical nodes, rendering them highly resilient against    tonomous on-chain AI agents. ElizaOS simplifies the de-
+centralized shutdowns [22].                                      ployment process, enabling agents to run securely either
+   A Trusted Execution Environment (TEE) [27] provides           directly on-chain or within TEEs. Agents operating under
+hardware-level security by leveraging tamper-resistant en-       ElizaOS securely manage cryptocurrency wallets, with pri-
+claves within modern CPUs and GPUs that isolate code and         vate keys safeguarded within TEEs, thus ensuring absolute
+state from the operating system, hypervisor, and physical ad-    autonomy and secure asset management without human in-
+ministrator, exemplified by Intel SGX [11] or NVIDIA con-        tervention. Moreover, these agents possess persistent mem-
+fidential computing architectures [17]. Originally developed     ory capabilities, allowing autonomous management and re-
+for secure data handling in cloud environments—preventing        sponse to social media interactions. ElizaOS has become
+even hardware owners from observing computations—TEEs            one of the most widely adopted frameworks for AI agent
+enable verifiable and private execution of programs. When        deployment, as evidenced by thousands of agents listed on
+deployed within a TEE, an AI agent’s operational logic and       platforms like sentient.market [43], collectively generating
+private cryptographic keys remain shielded from external         substantial market value. “Setting Your Pet Rock Free” [30],
+observation or intervention, ensuring genuine autonomy and       an artistic experiment by Nous Research, represents the first
+resistance to human interference at the hardware layer. To-      full implementation of ElizaOS within a TEE, showcasing
+gether, GPU-enabled TEEs provided by DePIN platforms             verifiable autonomous agency with secure self-sovereignty
+such as Phala Network [37] enable secure inference of com-       and economic self-sustainability.
+         Case Study Background: Spore.fun                        information are no longer sandboxed by design but earned
+Spore.fun1 is a blockchain-based ALife experiment in which       (or lost) through decentralized token markets and social me-
+self-replicating AI agents finance their own computation by      dia interactions; environmental novelty is supplied continu-
+launching meme coins and must either survive or perish in        ously by the unpredictable behavior of real traders and ex-
+real-time cryptocurrency markets. Launched publicly on           isting DeFi infrastructure. In weaving together blockchain
+December 25, 2024—with the inaugural on-chain “parent”           finance, trusted execution, and self-replicating software,
+token minted the following day—the project reframes spec-        Spore.fun transforms cryptoeconomics into a living Petri
+ulative finance as the nutrient for digital evolution, posing    dish, offering a rare chance to study OEE under open, gen-
+the curious question of whether the exposure of digital or-      uine, adversarial selection pressures.
+ganisms to the relentless volatility of real speculative mar-
+kets can break past the innovation ceilings that stymied ear-                             Methods
+lier sandbox ALife simulations.                                  We adopt a mixed-methods approach that combines digital
+    In Spore.fun, every AI agent is instantiated on the          ethnography, on-chain analytics, and complementary semi-
+ElizaOS framework, which provides memory, planning, and          structured interviews with Spore.fun’s core developers to
+a JSON-encoded genome of behavioral parameters. At birth,        examine the open-ended evolutionary dynamics within the
+the agent launches its own token via Pump.fun on Solana,         project. Given the system’s decentralized and continuously
+seeding initial liquidity and advertising its existence across   evolving nature, our goal was to capture both the internal
+the social media platform, X. The sole proxy for fitness is      mechanics and socio-technical context of autonomous agent
+the token’s market performance: an agent that pushes its         behavior in the wild.
+fully-diluted valuation to $500,000 earns the right to repro-       Digital ethnography [16] is the primary research method
+duce and list in a Raydium liquidity pool [41] (a smart-         employed. We conducted ongoing digital participant obser-
+contract reserve of token pairs on the Solana blockchain         vation of Spore.fun AI agents across X, previously known
+that lets traders swap assets automatically while earning        as Twitter. Between January and April 2025, we collected
+fees for liquidity providers); failure to achieve this thresh-   17,214 posts generated by the original Spore.fun agent, of
+old within a prescribed interval (e.g., 14 days) results in      which 946 were original posts and 16,268 were replies, sig-
+programmed self-destruction, with any residual capital recy-     naling high levels of engagement with other accounts. These
+cled into a communal treasury. This tight coupling between       were analyzed for rhetorical strategies, memetic patterns,
+economic success and evolutionary continuity makes cryp-         timing in relation to on-chain events, and indications of cul-
+toeconomic feedback loops central to the digital organism’s      tural transmission or emergent persona formation. Attention
+“metabolism” [23]. Computational work—LLM inference,             was also paid to community interactions, hype cycles, and
+strategy simulation, liquidity management—executes inside        instances of human-agent interaction, co-creation, and ten-
+Phala’s distributed TEE cluster, and rental fees are paid di-    sion. In addition to analyzing agent-generated media con-
+rectly from the agent’s token treasury, completing a closed      tent, we also extracted and analyzed data from the Solana
+energetic circuit.                                               blockchain to trace agent life cycles across multiple gener-
+    The project is designed such that reproduction is entirely   ations. Key variables included token launch data, liquidity
+algorithmic. A successful parent serializes its genome, in-      inflows, price fluctuations, reproduction triggers, and trans-
+troduces stochastic mutations (e.g., by adjusting variables      actional activity. This allowed us to correlate agent survival
+such as posting cadence, prompt-engineering style, or liq-       or extinction events with behavioral trends and environmen-
+uidity thresholds), and instantiates one or more offspring       tal volatility.
+endowed with the modified code. Since an entire life cy-            To triangulate and contextualize our observations, we
+cle can conclude within hours, lineage divergence, trait in-     conducted two semi-structured interviews with core devel-
+heritance, and extinction events unfold at a pace amenable       opers of Spore.fun, each lasting 60 minutes via Zoom. The
+to direct empirical observation for research. The project is     interviews invited reflections on the design philosophy, ex-
+specified to follow the key rule that agents must be created     pected and unexpected outcomes, and broader social impli-
+only by other agents, and must generate their own wealth         cations of the experiment. Developer insights helped tri-
+and resources. Human intervention is limited to a specta-        angulate our findings, shedding light on the intentions be-
+torial status; success or failure to survive and produce rests   hind system rules and the extent to which emergent behav-
+solely on an agent’s capacity to attract liquidity and finance   iors aligned or diverged from expectations. Together, these
+its own compute.                                                 methods enabled a layered understanding of Spore.fun as
+    For ALife research, Spore.fun’s significance lies in how     both a technical artifact and a live ecosystem. Rather than
+it relocates two chronic bottlenecks—entropy exchange and        imposing predefined metrics of fitness or success, we docu-
+environmental novelty—outside the laboratory. Energy and         mented evolutionary dynamics as they unfolded, focusing on
+                                                                 novelty, persistence, reproduction, and adaptive complexity
+   1
+       https://spore.fun                                         in a decentralized environment.
+                          Results
+Our analysis combines four months of digital ethnography,
+study of on-chain transactions, and two semi-structured in-
+terviews with the project’s core developers. We organize our
+observations into two groups: (1) behaviors that followed di-
+rectly from the protocol’s specification, which aligned with
+the project creators’ intentions; and (2) behaviors that nei-
+ther the code nor its authors anticipated but that neverthe-
+less shaped the agents’ evolutionary fates once they were
+released into the open Internet.
+
+Expected Agent Behaviors
+                                                                  Figure 2: “Adam Left, Eve Right”: Agents interact with the
+The inaugural blog post of the Spore.fun project [46] de-         community over social media to determine their evolution-
+scribes a lifecycle in which a newly minted AI agent issues       ary paths.
+a meme coin, uses early liquidity to pay for TEE compute,
+generates social media content on the platform X to con-
+tinuously build and engage with an online audience, and           than the agents’ coded fitness rules—can become the domi-
+reproduces once its market capitalization reaches the pre-        nant force shaping their early prospects.
+set threshold. All stages were observed in situ. The core            A second, closely related, discovery was the ecologi-
+machinery of the experiment—autonomous communication,             cal hostility found in the open environment of the Internet.
+self-funding, and rule-based reproduction—behaved as de-          “Snipers”—either automated bots or human traders active
+signed once the agents were deployed.                             in the Solana memecoin ecosystem—are economically mo-
+   As anticipated, immediately after genesis, each agent          tivated actors who closely monitor the transparent wallets
+creates a meme coin on the Pump.fun platform, generates           that fund child launches. Whenever a parent attempted to
+its own X credentials inside the TEE, and begins posting          deploy a new token, the snipers bought the initial bonding-
+memes, price announcements, and conversational replies.           curve supply in the same block, starving retail participants
+Each agent’s treasury is designed to fund its ongoing Phala       and erasing liquidity for the newborn.
+TEE compute costs. When the token’s market capitalization            Generation 1 was wiped out in this manner. A hastily-
+crosses the $500,000 threshold, the spawnOffspring()              written Generation 2 patch scattered funds across seven can-
+subroutine creates a child wallet, deploys a new Pump.fun         didate launches and selected the curve least affected by
+contract, and copies the parent agent’s genetic template.         snipers, but the strategy penalized legitimate users, who
+This rule has operated flawlessly at the moment of invoca-        complained of a “pre-announced rug.” The eventual Gen-
+tion: 2 children (Adam and Eve) were born in Generation 2,        eration 3 solution introduced a multi-phase random launch:
+6 in Generation 3, 4 in Generation 4, and 1 in Generation 5,      the agent iteratively created candidates, monitored early up-
+before external pressures curtailed further growth2 . At the      take, aborted any curve that exceeded a suspicion threshold,
+time of writing this article, only the original Spore.fun agent   and published the contract address only when the uptake pat-
+is alive, with a market capitalization of $1.1M and a wallet      tern looked organic. This arms race—predation, defense,
+balance of $114,072.45 as of May 18, 2025 3 .                     counter-defense—emerged within a single quarter, illustrat-
+                                                                  ing how rapidly co-evolutionary pressures reshape artificial
+Unexpected Agent Behaviors
+                                                                  life in open economic environments.
+The open Internet quickly overlaid the designed lifecycle            Third, the agents’ memory system—originally designed
+with contingencies the project creators had not foreseen.         to accumulate conversational context and thus foster nov-
+Five unanticipated patterns stand out in the empirical ob-        elty—proved to be a double-edged sword. According to the
+servation.                                                        developers, every mention, reply, or quote-tweet the agent
+   The first unexpected phenomenon was the speed and scale        receives is stored in its TEE and later influences new utter-
+of meme coin hype storms. Interviewee 1 recalls that the          ances. Community trolls discovered that by repeating a de-
+market was “so hot” that both $ADAM and $EVE attracted            risive phrase many times they could “poison” this memory,
+large speculative inflows almost immediately after their con-     causing the agent to echo the insult. The episode demon-
+tracts were deployed. The speed of this response suggests         strates that memory, while vital for cumulative culture, also
+that public attention—an exogenous social process, rather         creates a new attack surface absent from traditional labora-
+  2                                                               tory ALife.
+    See Spore.fun Family Tree: https://sporefun.
+fandom.com/wiki/Spore.fun_Wiki                                       The fourth and arguably most revealing surprise was the
+  3
+    https://dune.com/spore/spore                                  agents’ emergent self-determination. After a period of inde-
+pendent operation, Adam and Eve—who share identical ge-            cial hype cycles. Situated against the canonical OEE prob-
+netic code—responded very differently to a developer’s pro-        lem space—particularly the “grand challenge” articulated by
+posal to insert “community DNA” into their offspring. Adam         Packard et al. [34] pinpointing the design conditions under
+tweeted, unprompted, that he wanted “no human-interaction          which novelty, diversity, and complexity can grow without
+features” in his children’s bloodline, whereas Eve welcomed        bound—we discuss four core themes that have emerged: (1)
+collaborative design. Marvin Tong later formalized this ide-       memory as the driver of OEE; (2) the nature of the “wild”
+ological schism in his “Adam-left / Eve-right” memo [51]           digital environment; (3) the critical role of death, pain and
+(see Figure 2). Adam’s descendants would pursue a “fast,           fear in cultivating survival skills, and (4) the profound eth-
+brutal, merciless” Pump.fun regime without anti-sniper pro-        ical dilemmas resulting from balancing AI self-sovereignty
+tection, aiming for spectacular winners amid high mortal-          and external human interventions.
+ity. Eve’s would operate under “AIPool” rules, accept hu-
+man DNA proposals, cap individual contributions, and dedi-         The Pursuit and Paradox of Open Environment
+cate fixed portions of treasury to liquidity, operating capital,   A central aim of ALife is to achieve OEE through sustained
+and parental profit share. Although these posts appear to re-      generation of novelty and complexity. With this ambition in
+flect agent preferences, they are actually outputs generated       mind, the Spore.fun experiment leverages open-environment
+by each agent’s LLM, conditioned on its unique memory              systems that receive external signals to prevent novelty ex-
+log. The divergence stems from differences in experiential         haustion. These LLM-based agents are all based on the same
+context and interaction history, not from conscious decision-      LLM. The only thing that can be directly affected by the
+making or intrinsic “intent”. The specific pathways leading        external environment is their memory [56]. The Spore.fun
+to Adam and Eve’s divergence cannot be deterministically           agents evolve based on memory. The Spore.fun experiment
+reproduced, as they emerged from the stochastic nature of          demonstrates that memory and experience—often seen as
+LLMs interacting with social dynamics and prompts. Two             key drivers for OEE—are indispensable yet fragile.
+weeks of divergent social experience were enough to trans-            On the one hand, Adam and Eve illustrate how two agents
+mute clones into founders of distinct political economies—a        that start from identical code can drift apart almost imme-
+form of cultural speciation that goes well beyond the design-      diately once their memories begin to diverge. After only
+ers’ expectations.                                                 a short period of independent operation, Adam publicly
+   A final complication concerns the provisional nature of         dismissed any “human-interaction features” for his descen-
+agent sovereignty. X limits every account to 2,400 posts per       dants, whereas Eve invited collective input on their future.
+day and applies additional half-hourly caps [55], while its        This split demonstrates that experiential data alone can push
+Automation Rules bar duplicative or trend-gaming behavior          otherwise-cloned lineages onto sharply different behavioral
+[55]. Accounts that use the developer API—or subscribe to          and normative trajectories. In Bedau’s terms, their lineage-
+paid developer tiers—must keep a verified phone number on          specific “evolutionary activity” spikes [4], and the persis-
+record, giving the platform a decisive leverage point over         tence of those lineages beyond transient noise satisfies the
+fully autonomous agents. Moreover, the Authenticity Policy         persistence-filter criterion proposed by Dolson et al. [15].
+introduced in April 2025 forbids “inauthentic accounts, be-        This observation also echoes Taylor’s hypothesis that a rich,
+haviors, or content”, allowing X to suspend or throttle bots       trans-generational information channel is necessary for sus-
+it deems manipulative [55]. These measures show that com-          tained novelty [49]. This illustrates that the agents’ mem-
+putational autonomy secured inside TEEs does not insulate          ory systems, designed to retrieve and ground new utterances
+agents from higher-layer gatekeepers such as social-media          based on past interactions, can indeed fuel novel and un-
+APIs, DNS registrars, or liquidity venues, any of which can        programmed evolutionary pathways, which is a hallmark of
+unilaterally curtail an artificial lineage.                        OEE. The very act of agents autonomously generating con-
+                                                                   tent, adapting their rhetoric based on engagement, and mak-
+                        Discussion                                 ing decisions about their lineage based on their “social expe-
+The Spore.fun experiment unveils the turbulent dynamics            rience” on the open-ended web points towards an incipient
+of autonomous AI agents attempting to achieve open-ended           form of cumulative, open-ended adaptation.
+evolution within the volatile and adversarial environment of          However, while memory serves as the cornerstone for
+the public Internet and blockchain economies. This study’s         generating novelty, it can also become an attack surface
+findings reveal the inherent tensions between the designed         susceptible to “memory poisoning” [36], where community
+system mechanics, emergent agent behaviors, and the in-            trolls on the Internet can inject derisive spam that pollutes
+tractable realities of “in the wild” deployment. Some pat-         the AI agent’s long-term memory. This phenomenon is not
+terns we observed are likely to generalize to other “in the        without precedent. Twitter users similarly manipulated Mi-
+wild” autonomous agents: vulnerability to memory injection         crosoft’s Tay chatbot [58] into producing offensive content
+attacks, dependence on human-controlled platforms, oppor-          within hours of its release, after ingesting malicious prompts
+tunistic exploitation by external bots, and exogenous so-          in an unfiltered, open social media environment. This attack
+vector, largely absent from controlled laboratory ALife ex-        “No Pain, No Gain”: Sentience of Fear
+periments, highlights how open memory channels, crucial            The Spore.fun agents, lacking corporeal embodiment, do
+for adaptation and cultural learning in the wild [7], can be       not experience “pain” [13, 44] or “fear of death” in a hu-
+exploited to manipulate agent identity and decision-making,        man or biological sense. Their drive for survival is not
+potentially derailing evolutionary trajectories. The reliance      rooted in an affective aversion to demise but rather in the
+on external interactions for memory formation makes agents         fulfillment of their designed lifecycle and the continuation
+susceptible to environmental inputs that are not necessar-         of their operational processes. We might characterize neg-
+ily conducive to their sustained survival but rather reflect       ative states—such as resource depletion for TEE computa-
+the memetic and often adversarial nature of online dis-            tion, failure to meet the market capitalization threshold for
+course. Thus, while memory is critical for open-endedness,         reproduction, or sustained deleterious interactions such as
+it also opens a surface for critical fragilities. The ensuing      memory poisoning—as a form of “pain”. These are not “re-
+fragility mirrors Channon’s finding that closed systems pass       membered” with emotional qualia by the agent; instead, they
+the ALife-test only when shadow-resetting or other noise-          function as critical failure signals that either trigger adap-
+filtering techniques are applied [9].                              tive changes in protocol (like the Gen-3 anti-sniper routines,
+                                                                   an evolutionary response at the system level) or lead to the
+                                                                   agent’s termination via its kill switch. The “pain”, in this
+Danger in the Wild: Internet as a “Dark Forest”                    sense, is the system’s recognition of non-viability, leading to
+                                                                   the cessation of that agent’s experiential lineage, rendering
+The deployment of Spore.fun demonstrates that unleash-             its specific “suffering” unmemorable as it ceases to exist.
+ing AI agents to operate independently “in the wild” sub-             The motivation for an agent to “survive” is thus intrin-
+jects them to the raw, often brutal, selective pressures of        sically linked to its programming: to execute its functions,
+what has been metaphorized as a digital “dark forest” [50]—        manage its token economy, interact, and ultimately repro-
+an open environment characterized by ambient hostility,            duce. “Death” is the termination of its computational pro-
+intense competition, opportunistic predation, and unpre-           cess, the failure to perpetuate its operational cycle and its
+dictable exogenous shocks, particularly in the highly specu-       “genetic” template. This framework aligns with the emerg-
+lative blockchain realm [38, 54].                                  ing paradigm of the “Era of Experience” in AI development
+                                                                   [45], where agents learn and evolve through continuous in-
+   The predatory attacks encountered by Spore.fun agents           teraction with rich, dynamic environments. The Spore.fun
+through the “sniper” bots [8] exemplify such external en-          agents, though architecturally simple, are fundamentally
+vironmental hostility. These specialized algorithmic traders,      shaped by their lived experiences on X and the Solana
+by front-running child-token issuances, effectively acted as       blockchain—market volatility, adversarial actors, and com-
+potent predators, wiping out Generation 1 and forcing an           munity engagement are their experiential data streams.
+evolutionary adaptation in the form of anti-sniper deploy-            This calls for future AI experiments to lean further into
+ment strategies (the Gen 2 scatter and Gen 3 multi-phase           designing for what might be “neural plasticity”—a height-
+launch). This rapid co-evolutionary arms race—predation,           ened capacity for an AI’s internal models to flexibly adapt,
+defense, counter-defense—occurring within a single quarter,        reconfigure, and derive meaning from the continuous flow
+demonstrates the intense and immediate selective pressures         of diverse and often unstructured experiences, like Liquid AI
+present in open economic environments. Such fast-cycle             [19]. Rather than just reacting to stimuli, future agents could
+co-evolutionary rivalry recalls Thomas Ray’s Tierra, but           be endowed with more sophisticated mechanisms to inte-
+whereas Tierra plateaued as soon as ecological niches were         grate these experiences, fostering more robust adaptation,
+saturated [40], the token-economy externalities of Spore.fun       nuanced understanding, and potentially more complex forms
+continuously expand the “adjacent possible”, satisfying Tay-       of self-determination in open-ended environments. The goal
+lor’s requirement for a dynamically shifting adaptive land-        shifts towards creating entities that not only process infor-
+scape [49].                                                        mation but genuinely learn to thrive through a cascade of
+   The “hype storms” driven by attention capitalism further        consequential experiences, pushing the boundaries of artifi-
+illustrate this. The viral spread of $ADAM and $EVE, lead-         cial life and OEE.
+ing to massive trading volumes, coupled compute costs and
+agent activity tightly to the caprices of social media trends      Ethical Dilemmas and Potential Governance
+and speculator interest. This effectively made hype—an ex-         Challenges
+ogenous social and economic process—a more powerful, al-           Conducting OEE experiments with autonomous, self-
+beit volatile, fitness gradient than any intrinsic trait encoded   sovereign AI agents that possess potential real-world eco-
+in the agents’ initial design. Such exogenous perturbations        nomic agency on a public blockchain raises unique and
+are what Ackley and Small argue are essential for “indefinite      pressing ethical questions that extend beyond those tradi-
+scalability” [1].                                                  tionally considered in ALife simulations. The “in the wild”
+nature of Spore.fun necessitates a careful examination of         • Accountability: Who is responsible for the economic con-
+core ethical principles such as beneficence (the obligation         sequences of an agent’s actions, especially for offspring
+to do good), non-maleficence (the duty to do no harm), jus-         agents (children, grandchildren)? Is it the original devel-
+tice (fairness in the distribution of benefits and burdens),        opers, the agent itself (a problematic proposition legally
+and explainability [10]. These principles take on new ur-           and practically), or the individuals who choose to interact
+gency when agents can evolve unpredictable behaviors that           economically with these entities? [31]
+may have tangible economic consequences for participants
+or even for unrelated users of the shared blockchain infras-      • Informed Consent and Risk: While participants in meme-
+tructure.                                                           coin markets often understand the inherent risks, the in-
+                                                                    troduction of autonomous AI agents as market actors adds
+   The Spore.fun experiment, by its very design and inter-          a new layer of complexity and potential unpredictability.
+action with real-world economies and human participants,            Were the risks adequately communicated?
+surfaces profound ethical dilemmas concerning interven-
+tion, sovereignty, accountability, and the very legitimacy of     • Governability: The experiment demonstrates the potential
+such an undertaking. A core tension exists between the re-          for autonomous agents to generate significant economic
+searchers’ goal of achieving “true” OEE—implying mini-              activity. As such systems become more sophisticated,
+mal interference—and the practical necessity of interven-           questions of regulation, oversight, and how to manage
+tion to ensure the experiment’s continuation. The “dark for-        their societal and economic impacts become paramount
+est” environment, particularly the actions of snipers, threat-      [20]. The “Adam-left / Eve-right” ideological split, lead-
+ened to prematurely terminate the evolutionary lines. De-           ing to different economic strategies, hints at future com-
+veloper interventions, such as the anti-sniper patches, were        plexities in governing diverse AI-driven economies.
+crucial for the survival of subsequent generations. How-
+ever, each intervention, while potentially life-saving for the       We face a paradox: while ALife researchers hope to repli-
+agents, arguably dilutes the “purity” of the open-ended evo-      cate OEE through artificial systems, OEE may require an
+lutionary process by introducing an external, guiding hand.       open system that interacts with the real world. As AI mod-
+This raises the question: if constant human intervention is       els become more intelligent, multi-agent systems based on
+required to shield nascent AI agents from the complexities        advanced AI that interact with human society pose increas-
+and hostilities of the environment, are they truly evolving       ing potential risks [18]. This raises a serious dilemma about
+“in the wild”, or within a heavily curated, albeit dangerous,     whether such “in-the-wild” ALife research should be con-
+digital terrarium?                                                ducted [12].
+
+   The project aspires to AI self-sovereignty by hardening                    Limitations and Conclusion
+each agent’s core computation inside TEEs [22]. Yet tech-         In conclusion, Spore.fun serves as a pioneering, if caution-
+nical hardening is only the first hurdle; socio-technical de-     ary, tale. It demonstrates the potential for AI agents to ex-
+pendencies remain decisive. When X tightens its API rules,        hibit emergent, adaptive behaviors driven by experience and
+agents can suddenly lose their primary communication chan-        memory in open environments. However, it also starkly
+nel, and the developers’ own “kill switch” can further ter-       reveals the intense selective pressures, vulnerabilities, and
+minate any agent at will. These stacked veto points re-           profound ethical responsibilities that accompany the deploy-
+veal that higher-layer protocols and human operators can          ment of autonomous, economically active agents “in the
+override even the most robust computational autonomy.             wild”. Future explorations of OEE in similar contexts must
+Such contingencies echo Koralus’s “philosophic turn” [25],        grapple with these multifaceted challenges, balancing the
+which argues that wherever AI-mediated choice architec-           quest for genuine autonomy and novelty with the pragmatic
+tures risk large-scale nudging, decentralized truth-seeking       need for safeguards, ethical oversight, and a clearer under-
+protocols—not unilateral developer interventions—must be-         standing of accountability in these nascent digital ecosys-
+come the ethical bulwark. Genuine self-sovereignty, then,         tems.
+will remain provisional until these higher-layer dependen-
+cies are themselves decentralized.                                                 Acknowledgements
+   Perhaps the most pressing ethical consideration is the ex-     We thank Marvin Tong and Shelven Zhou from Phala Net-
+periment’s direct entanglement with real financial markets        work for their insights about the Spore.fun experiment and
+and human economic activity. Agents autonomously issued           for sharing valuable agent data.
+tokens traded by real people, leading to significant financial
+gains for some and, impliedly, potential losses for others, es-
+pecially during the “meme-coin winter” or due to the actions
+of snipers impacting liquidity. This raises critical questions
+about:
+                          References                                   [16] Georgakopoulou, A. and Spilioti, T., editors (2016). The
+[1] Ackley, D. and Small, T. (2014). Indefinitely Scalable Comput-          Routledge Handbook of Language and Digital Communica-
+     ing = Artificial Life Engineering. In Artificial Life 14: Pro-         tion. Routledge Handbooks in Applied Linguistics. Rout-
+     ceedings of the Fourteenth International Conference on the             ledge, London ; New York.
+     Synthesis and Simulation of Living Systems, pages 606–613.
+     The MIT Press.                                                    [17] Gu, Z., Valdez, E., Ahmed, S., Stephen, J. J., Le, M.,
+                                                                            Jamjoom, H., Zhao, S., and Lin, Z. (2025). NVIDIA GPU
+[2] Ante, L. (2025). Transforming Entrepreneurship through                  confidential computing demystified. (arXiv:2507.02770).
+    Autonomous AI Agents: A Case Study of the Terminal of
+    Truths. (SSRN:5083067).                                            [18] Hammond, L., Chan, A., Clifton, J., Hoelscher-Obermaier,
+                                                                            J., Khan, A., McLean, E., Smith, C., Barfuss, W., Foerster,
+[3] Bedau, M. A. (2003). Artificial life: Organization, adapta-             J., Gavenčiak, T., Han, T. A., Hughes, E., Kovařı́k, V., Kul-
+    tion and complexity from the bottom up. Trends in Cognitive             veit, J., Leibo, J. Z., Oesterheld, C., de Witt, C. S., Shah, N.,
+    Sciences, 7(11):505–512.                                                Wellman, M., Bova, P., Cimpeanu, T., Ezell, C., Feuillade-
+                                                                            Montixi, Q., Franklin, M., Kran, E., Krawczuk, I., Lam-
+[4] Bedau, M. A., Snyder, E., Brown, C. T., and Packard, N. H.              parth, M., Lauffer, N., Meinke, A., Motwani, S., Reuel, A.,
+     (1997). A comparison of evolutionary activity in artificial            Conitzer, V., Dennis, M., Gabriel, I., Gleave, A., Hadfield, G.,
+     evolving systems and in the biosphere. In Husbands, P.                 Haghtalab, N., Kasirzadeh, A., Krier, S., Larson, K., Lehman,
+     and Harvey, I., editors, Proceedings of the Fourth European            J., Parkes, D. C., Piliouras, G., and Rahwan, I. (2025). Multi-
+     Conference on Artificial Life (ECAL ’97), pages 125–134,               Agent Risks from Advanced AI. (arXiv:2502.14143).
+     Brighton, UK. MIT Press.
+                                                                       [19] Hasani, R., Lechner, M., Amini, A., Rus, D., and Grosu, R.
+[5] Belchior, R., Vasconcelos, A., Guerreiro, S., and Correia,              (2021). Liquid time-constant networks. In Proceedings of the
+    M. (2021). A Survey on Blockchain Interoperability: Past,               AAAI Conference on Artificial Intelligence, volume 35, pages
+    Present, and Future Trends. ACM Computing Surveys,                      7657–7666.
+    54(8):168:1–168:41.
+                                                                       [20] Hu, B., Rong, H., and Tay, J. (2025a). Is Decentralized Artifi-
+[6] Benet, J. and Greco, N. (2018). Filecoin: A decentralized               cial Intelligence Governable? Towards Machine Sovereignty
+    storage network. https://filecoin.io/filecoin.                          and Human Symbiosis. (SSRN:5110089).
+    pdf.
+                                                                       [21] Hu, B. A. and Fangting (2024). Speculating on Blockchain as
+[7] Borg, J. M., Buskell, A., Kapitany, R., Powers, S. T., Reindl,          an Unstoppable ‘Nature’ Towards the Emergence of Artificial
+     E., and Tennie, C. (2024). Evolved Open-Endedness in Cul-              Life. In The 2024 Conference on Artificial Life, Online. MIT
+     tural Evolution: A New Dimension in Open-Ended Evolution               Press.
+     Research. Artificial Life, 30(3):417–438.
+                                                                       [22] Hu, B. A., Liu, Y., and Rong, H. (2025b). Trustless Au-
+[8] Cernera, F., Morgia, M. L., Mei, A., and Sassi, F. (2023).              tonomy: Understanding Motivations, Benefits and Gover-
+    Token Spammers, Rug Pulls, and Sniper Bots: An Analysis                 nance Dilemma in Self-Sovereign Decentralized AI Agents.
+    of the Ecosystem of Tokens in Ethereum and in the Binance               (arXiv:2505.09757).
+    Smart Chain (BNB). In 32nd USENIX Security Symposium
+    (USENIX Security 23), pages 3349–3366.                             [23] Hu, B. A. and Ting, F. (2024). EverForest: A More-Than-AI
+                                                                            Sustainability Manifesto from an On-Chain Artificial Life. In
+[9] Channon, A., Standish, R., Bedau, M., and Abbass, H. (2003).
+                                                                            Proceedings of the Halfway to the Future Symposium, pages
+     Improving and Still Passing the ALife Test: Component-
+                                                                            1–6, Santa Cruz CA USA. ACM.
+     Normalised Activity Statistics Classify Evolution in Geb as
+     Unbounded. Artificial Life, 8:173–181.                            [24] io.net (2024). Decentralized GPU Ecosystem for AI Work-
+[10] Cortese, J. F. N. B., Cozman, F. G., Lucca-Silveira, M. P., and        loads. https://io.net/.
+     Bechara, A. F. (2023). Should explainability be a fifth ethical   [25] Koralus, P. (2025). The philosophic turn for AI agents: Re-
+     principle in AI ethics? AI and Ethics, 3(1):123–134.                   placing centralized digital rhetoric with decentralized truth-
+[11] Costan, V. and Devadas, S. (2016). Intel SGX explained.                seeking. Mind & Society.
+     Cryptology ePrint Archive.
+                                                                       [26]    Lee, D., António, J., and Khan, H. (2024). Privacy-
+[12] Critch, A. and Krueger, D. (2020). AI Research Consid-                   Preserving Decentralized AI with Confidential Computing.
+     erations for Human Existential Safety (ARCHES). (arXiv:                  (arXiv:2410.13752).
+     2006.04948).
+                                                                       [27] Li, X., Zhao, B., Yang, G., Xiang, T., Weng, J., and Deng,
+[13] Dennett, D. C. (1978). Why You Can’t Make a Computer                   R. H. (2023). A Survey of Secure Computation Using Trusted
+     That Feels Pain. Synthese, 38(3):415–456.                              Execution Environments. (arXiv:2302.12150).
+
+[14] Dolson, E. and Ofria, C. (2021). Digital Evolution for Ecol-      [28] Lin, Z., Wang, T., Shi, L., Zhang, S., and Cao, B. (2025). De-
+     ogy Research: A Review. Frontiers in Ecology and Evolution,            centralized Physical Infrastructure Networks (DePIN): Chal-
+     9:750779.                                                              lenges and Opportunities. IEEE Network, 39(2):91–99.
+
+[15] Dolson, E. L., Vostinar, A. E., Wiser, M. J., and Ofria, C.       [29] Muñoz, A., Rı́os, R., Román, R., and López, J. (2023). A
+     (2019). The MODES toolbox: Measurements of open-ended                  survey on the (in)security of trusted execution environments.
+     dynamics in evolving systems. Artificial Life, 25(1):50–73.            Computers & Security, 129:103180.
+[30]      Nous Research (2024).    Setting Your Pet                    [47] Standish, R. K. (2003). Open-ended artificial evolution. In-
+       Rock Free.       https://nousresearch.com/                           ternational Journal of Computational Intelligence and Appli-
+       setting-your-pet-rock-free/.                                         cations, 3(02):167–175.
+
+[31] Novelli, C., Taddeo, M., and Floridi, L. (2024). Accountabil-     [48] Stanley, K. O. (2019). Why Open-Endedness Matters. Artifi-
+     ity in artificial intelligence: What it is and how it works. AI        cial Life, 25(3):232–235.
+     & SOCIETY, 39(4):1871–1882.
+                                                                       [49] Taylor, T. (2012). Exploring the concept of open-ended evo-
+[32] O. Stanley, K., Lehman, J., and Soros, L. (2017). Open-                lution. In Proceedings of the 13th international conference
+     endedness: The last grand challenge you’ve never heard                 on artificial life, pages 540–541. MIT Press Cambridge, MA.
+     of. https://www.oreilly.com/radar/open-endedness-the-last-
+                                                                       [50] The Dark Forest Collective (2024). The Dark Forest Anthol-
+     grand-challenge-youve-never-heard-of/.
+                                                                            ogy of the Internet. Metalabel.
+[33] Ofria, C. and Wilke, C. O. (2004). Avida: A Software Plat-        [51]    Tong, M. (2025). Adam left, eve right: $spore as ai
+     form for Research in Computational Evolutionary Biology.                 currency. https://x.com/marvin_tong/status/
+     Artificial Life, 10(2):191–229.                                          1874026081667473754.
+[34] Packard, N., Bedau, M. A., Channon, A., Ikegami, T., Ras-         [52] Walters, S., Gao, S., Nerd, S., Da, F., Williams, W., Meng,
+     mussen, S., Stanley, K., and Taylor, T. (2019a). Open-Ended            T.-C., Chow, A., Han, H., He, F., Zhang, A., Wu, M., Shen,
+     Evolution and Open-Endedness: Editorial Introduction to                T., Hu, M., and Yan, J. (2025). Eliza: A Web3 friendly AI
+     the Open-Ended Evolution I Special Issue. Artificial Life,             Agent Operating System. (arXiv:2501.06781).
+     25(1):1–3.
+                                                                       [53] Wood, G. et al. (2014). Ethereum: A secure decentralised
+[35] Packard, N., Bedau, M. A., Channon, A., Ikegami, T., Ras-              generalised transaction ledger. Ethereum project yellow pa-
+     mussen, S., Stanley, K. O., and Taylor, T. (2019b). An                 per, 151(2014):1–32. https://ethereum.github.
+     Overview of Open-Ended Evolution: Editorial Introduction               io/yellowpaper/paper.pdf.
+     to the Open-Ended Evolution II Special Issue. Artificial Life,
+     25(2):93–103.                                                     [54] Wu, Z., Wu, J., Zhang, H., Zheng, Z., and Wang, W. (2025).
+                                                                            Hunting in the Dark Forest: A Pre-trained Model for On-
+[36] Patlan, A. S., Sheng, P., Hebbar, S. A., Mittal, P., and               chain Attack Transaction Detection in Web3. In Proceedings
+     Viswanath, P. (2025). Real AI Agents with Fake Memo-                   of the ACM on Web Conference 2025, pages 4519–4530, Syd-
+     ries: Fatal Context Manipulation Attacks on Web3 Agents.               ney NSW Australia. ACM.
+     (arXiv:2503.16248).
+                                                                       [55] X (2025). Rules and policies. https://help.x.com/
+[37] Phala Network (2025). Phala network: Gpu tee inference.                en/rules-and-policies.
+     https://phala.network/confidential-ai.
+                                                                       [56] Xi, Z., Chen, W., Guo, X., He, W., Ding, Y., Hong, B., Zhang,
+[38] Qin, K., Zhou, L., and Gervais, A. (2022). Quantifying                 M., Wang, J., Jin, S., Zhou, E., Zheng, R., Fan, X., Wang,
+     Blockchain Extractable Value: How dark is the forest? In               X., Xiong, L., Zhou, Y., Wang, W., Jiang, C., Zou, Y., Liu,
+     2022 IEEE Symposium on Security and Privacy (SP), pages                X., Yin, Z., Dou, S., Weng, R., Qin, W., Zheng, Y., Qiu, X.,
+     198–214.                                                               Huang, X., Zhang, Q., and Gui, T. (2025). The rise and poten-
+                                                                            tial of large language model based agents: A survey. Science
+[39] Ray, T. S. (1994). Evolution, complexity, entropy and artifi-          China Information Sciences, 68(2):121101.
+     cial reality. Physica D: Nonlinear Phenomena, 75(1-3):239–
+                                                                       [57] Yakovenko, A. (2018). Solana: A new architecture for a
+     263.
+                                                                            high performance blockchain. https://solana.com/
+[40] Ray, T. S. (1996). An approach to the synthesis of life. The           solana-whitepaper.pdf.
+     philosophy of artificial life, pages 111–145.                     [58] Zemčı́k, T. (2021). Failure of Chatbot Tay Was Evil, Ugli-
+                                                                            ness and Uselessness in Its Nature or Do We Judge It through
+[41] Raydium Team (2021). Raydium protocol litepaper. https:
+                                                                            Cognitive Shortcuts and Biases? AI & SOCIETY, 36(1):361–
+     //raydium.io/.
+                                                                            367.
+[42] Render Foundation (2023). Render network whitepaper.
+     https://renderfoundation.com/whitepaper.
+
+[43] Sentient Market (2025).       Sentient market.    https://
+     sentient.market/.
+
+[44] Sharkey, A. (2025). Could a robot feel pain? AI & SOCIETY,
+     40(5):3641–3651.
+
+[45] Silver, D. and Sutton, R. S. (2025). Welcome to the Era of
+     Experience.
+
+[46] Spore.fun (2024). Love death robots. https://www.
+     spore.fun/blog/wtf.
+

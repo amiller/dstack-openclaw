@@ -1,0 +1,1109 @@
+                                                                                                 NDAI ∗
+                                            Matt Stephenson†               Andrew Miller‡         Xyn Sun†          Bhargav Annem§             Rohan Parikh¶
+arXiv:2502.07924v1 [econ.TH] 11 Feb 2025
+
+
+
+
+                                                                                                  Abstract
+                                                      We study a fundamental challenge in the economics of innovation: an inventor must reveal details
+                                                  of a new idea to secure compensation or funding, yet such disclosure risks expropriation. We present
+                                                  a model in which a seller (inventor) and buyer (investor) bargain over an information good under the
+                                                  threat of hold-up. In the classical setting, the seller withholds disclosure to avoid misappropriation,
+                                                  leading to inefficiency. We show that trusted execution environments (TEEs) combined with AI agents
+                                                  can mitigate and even fully eliminate this hold-up problem. By delegating the disclosure and payment
+                                                  decisions to tamper-proof programs, the seller can safely reveal the invention without risking expropri-
+                                                  ation, achieving full disclosure and an efficient ex post transfer. Moreover, even if the invention’s value
+                                                  exceeds a threshold that TEEs can fully secure, partial disclosure still improves outcomes compared to
+                                                  no disclosure. Recognizing that real AI agents are imperfect, we model “agent errors” in payments or
+                                                  disclosures and demonstrate that budget caps and acceptance thresholds suffice to preserve most of the
+                                                  efficiency gains.
+                                                      Our results imply that cryptographic or hardware-based solutions can function as an “ironclad NDA,”
+                                                  substantially mitigating the fundamental disclosure–appropriation paradox first identified by Arrow
+                                                  (1962) and Nelson (1959). This has far-reaching policy implications for fostering R&D, technology
+                                                  transfer, and collaboration.
+
+
+                                           1      Introduction: The Disclosure Paradox
+                                           What if you discovered something beyond belief, but revealing it meant giving it away for free? That was
+                                           the predicament of John Harrison, the humble English clockmaker who solved a riddle that had confounded
+                                           luminaries like Galileo, Huygens, and Newton. His life’s work—the Marine Chronometer—was so revolu-
+                                           tionary it was likened to finding “the Fountain of Youth, the secret of perpetual motion, or the formula for
+                                           transforming lead into gold” [Sobel, 2005].
+                                               Unfortunately for Harrison, the year was 1714, and he had no access to AI Agents or Trusted Execu-
+                                           tion Environments (“TEE”s). So when he unveiled his chronometer to claim his reward—literally a king’s
+                                           ransom—he became entangled in decades of struggle with bureaucrats who repeatedly moved the goalposts
+                                           to prevent paying him his due. Now that he had revealed his invention, what incentive remained for these
+                                           elites to pay this “man of simple birth” at all? And so they didn’t. It took forty years—and the personal
+                                           intervention of a new king, George III—before an aged and exhausted Harrison finally secured his rightful
+                                           reward [Bennett, 2003, Sobel, 2005].
+                                               This story reflects a well-established tension identified by Arrow [1971] and Nelson [1959], wherein an
+                                           inventor must reveal information to capture its economic value but, by revealing it, risks losing the ability
+                                           to appropriate it. This dilemma is fundamental to information goods, arising because disclosed knowledge
+                                           cannot typically be undisclosed. John Harrison couldn’t gain leverage on the bureaucrats by threatening to
+                                           un-disclose his design. Likewise, Pythagoras could not reveal his theorem to someone and then say, ”Forget
+                                           everything you just heard unless you pay me.” Once the knowledge was out, it was out for good. But today
+                                           in light of our sci-fi present, we can re-consider this disclosure problem and progress toward a solution.
+                                               ∗ This version: February 13, 2025
+                                               † Pantera Capital
+                                               ‡ Teleport, Flashbots
+                                               § Caltech
+                                               ¶ Nous Research, University of Chicago Booth
+
+
+
+
+                                                                                                      1
+    We model a scenario where AI Agents represent the buyer’s and seller’s interests within a secure crypto-
+graphic black box, enabling them to validate and bargain over the invention without prematurely revealing
+it. That is, within this secure environment, John Harrison’s AI agent could disclose the properties of the
+chronometer to the King of England’s AI agent, who could then evaluate to its satisfaction that it solves the
+longitude problem. If satisfied, a smart contract automatically releases both the invention and the payment.
+If no agreement is reached, Harrison’s invention along with the agent interaction, is provably deleted without
+ever having left the secure environment. No prolonged tribunals, no need for a monarch’s personal plea—just
+a perfect non-disclosure agreement.1
+
+1.1     Why Patents and NDAs Often Fail
+John Harrison revealed valuable information, but were it not for the eventual intervention of a king, he may
+have regretted it. Inventors who anticipate Harrison-type difficulties and never reveal–or don’t even develop
+their inventions in the first place– are preventing expropriation through withholding. But by withholding
+they sacrifice potential gains from trade, investment, collaboration, and so on.
+    Such strategic withholding of information is a form of ex ante ”enforcement” that Arrow modeled. And
+beyond the theory, there are studies like Dushnitsky and Shaver [2009] which observes 1,600 start-up ventures
+seeking funding and finds that “many relationships do not form because . . . the entrepreneur may be wary
+of disclosing an invention, fearing imitation.”
+    An alternative is using legal protections—such as NDAs, patents, or trade secret law. These are attempts
+at ex post enforcement– once an unauthorized use or disclosure is detected, the injured party must gather
+evidence, pursue litigation, and demonstrate harm to obtain damages or injunctive relief. But ex post
+enforcement is costly, uncertain, and highly imperfect, due to the very nature of intangible knowledge which
+makes monitoring and proof of misappropriation difficult.[Graham, 2005, Morgan, 2015, Contigiani and Hsu,
+2019]. In principle, one must effectively monitor every possible use of the disclosed information.
+    And then there is the matter of enforcement. Insufficient enforcement makes these legal protections less
+valuable. But aggressive enforcement creates the potential for harmful Type-I errors (“false positives”),
+where innocent parties are penalized. This is exemplified, for instance, in the chilling effect on innovation
+caused by patent trolls.[Cohen et al., 2019]
+    By contrast, our approach leverages ex interim enforcement via agentic bargaining within a secure Trusted
+Execution Environment (TEE). No external copies or usage can occur during negotiations, nor can they occur
+in the absence of mutual agreement. Thus disclosure is effectively ‘conditional’ on reaching agreement. This
+prevents any unauthorized use from arising in the first place, obviating ex post enforcement challenges.
+Because the TEE is relatively low-cost and eliminates the need for costly oversight or litigation, we avoid
+the intractable monitoring problem of needing to observe essentially every conceivable subsequent use of the
+disclosed information. Type I risks don’t show up overtly in our setting, since there is no ”over enforcement.”
+However, there is the possibility in our model of agent overpayment errors, which do analogize to Type-I
+risks.2 But in our setting these risks are local and don’t induce the broad chilling effect on innovation than
+patent trolling does.
+    As a result, this the TEE approach may substitute or complement traditional legal instruments by shifting
+enforcement inside the technology rather than relying solely on ex post legal remedies or ex ante information
+withholding.
+
+1.2     Background and Related Work
+The incentive incompatibility of disclosure is a classic economic dilemma. And this incompatibility imposes
+serious costs: inventors cannot trust that their disclosures will remain protected, and so many potential
+breakthroughs may remain hidden or never be developed in the first place. And, since new innovations
+themselves are often spurred through recombining of ideas [Fleming, 2001], this effect can have long-lasting
+stifling implications.
+   1 Provided, of course, that the black box is fully secure and the AI Agents can assess the invention’s performance with
+
+sufficient fidelity.
+   2 The analogy is stronger than you might think. Consider that the risk of signing an NDA is essentially an overpayment risk,
+
+taking on potential liability in exchange for some expected value of disclosure that may be insufficient. The same idea extends
+to patents, where the expected benefit of commercializing an invention is weighed against the cost of possible litigation.
+
+
+                                                              2
+    Under incomplete contracts, parties must balance the need to disclose private information to realize gains
+from trade against the risk that disclosed information may be appropriated [Arrow, 1972]. This trade-off is
+especially stark for innovators or entrepreneurs, who often incur large fixed costs to develop a new product
+or idea but cannot attract funding without revealing it [Nelson, 1959].
+    Our analysis builds on several literature streams. First, we extend work on information disclosure in
+contracting [Crawford and Sobel, 1982, Okuno-Fujiwara, 1991] by explicitly modeling disclosure as a contin-
+uous choice under uncertainty. Second, we connect to research on hold-up problems and incomplete contracts
+[Hart and Moore, 1988, Aghion and Howitt, 1992, Grossman and Hart, 1986, Bernheim and Whinston, 1987,
+Anton and Yao, 1994], showing how technological solutions like trusted execution environments can mitigate
+appropriation risks. AI agents in our treatment are not quite automata in a machine game, as in Rubinstein
+[1986] but could modeled as such. Our treatment of TEE-resident AI agents is closer to the principle agent
+setting of Aghion and Tirole [1997], where agents have some congruence parameter measuring how closely
+its objectives match the principal’s.
+    By introducing cryptographic and hardware-based solutions, our framework departs from traditional
+reliance on legal instruments such as patents or NDAs, offering a technologically enforced approach to secure
+collaboration. This complements the partial disclosure focus in Anton and Yao [1994, 2002] by suggesting
+that if inventors can reliably limit expropriation through secure hardware, they may opt for more complete
+disclosure earlier in the R&D timeline, thereby accelerating cumulative innovation in the spirit of Scotchmer
+[1999].
+    Finally, we also note that this problem mirrors the time-priority exploitation common in blockchain MEV
+[Daian et al., 2020], where e.g. order flow information necessary for market function enables front-running.
+This is a major inspiration for our solution as well as connecting this work to the literature on MEV and
+mechanism design in decentralized systems [Roughgarden, 2020, Capponi et al., 2023].
+
+Contributions. We highlight our key contributions as follows:
+  1. Formalizing the disclosure–expropriation trade-off. We develop a simple game-theoretic model
+     in which a seller (inventor) chooses how much to disclose to a buyer (investor) before a potential trans-
+     action, under the threat of expropriation. Absent any protective mechanism, full or partial disclosure
+     is thwarted by hold-up.
+  2. Introducing a TEE-based mechanism to resolve hold-up. We show that delegating decisions
+     to AI agents operating inside a trusted execution environment (TEE) can render disclosure incentive-
+     compatible. Under sufficient security, full disclosure and investment can be achieved, raising total
+     surplus and yielding Pareto improvements.
+  3. Modeling TEE security risk for high-value secrets. To address the concern that real-world TEEs
+     are not perfectly secure, we formalize the expected gain from malfeasance using threshold encryption
+     and positive detection probabilities from the TEE. This yields a “scope condition” under which even
+     high-value ideas can be partially or fully protected, bridging theory and practical adoption.
+  4. Extending the analysis to imperfect (“noisy”) agents. We relax the assumption of perfectly
+     congruent agents to allow for random errors in payments or disclosure. We show that a simple budget
+     cap for the buyer’s agent and a reject-option for the seller’s agent can contain the risk of overpayments
+     or underpayments, preserving most gains from trade even with high error rates.
+  5. Implications for policy and mechanism design. Our results illustrate how cryptographic or
+     hardware-based safeguards can substitute for—rather than merely supplement—costly legal instru-
+     ments like NDAs. This has broad ramifications for protecting intellectual property, incentivizing R&D,
+     and promoting collaborative innovation across firms and industries.
+
+1.3    Model Framework and Roadmap
+We develop a model where two parties must choose disclosure levels before learning if gains from trade
+exist. Higher disclosure increases the probability of realizing potential gains but also raises appropriation
+risk. The model demonstrates how uncertainty about trade value interacts with expropriation risk to create
+undesirable equilibria.
+    We then propose a technological approach that reduces expropriation risk by leveraging secure environ-
+ments rather than relying on contractual solutions alone. Specifically, we show how AI agents in trusted
+
+                                                      3
+execution environments can improve efficiency by making disclosure conditional on agreement, at the cost
+of some potential uncertainty.
+
+Roadmap. The remainder of the paper is structured as follows. Section 2 introduces our baseline disclo-
+sure game under expropriation, highlighting why the seller must withhold information absent a protective
+mechanism. Section 3 then presents our trusted-execution-environment (TEE) setting, demonstrating how
+secure hardware and AI agents can restore efficient disclosure. Section 4 characterizes equilibrium behavior
+in this TEE-based setting, while Section 5 extends the analysis to consider realistic AI-agent errors. Finally,
+Section 6 discusses broader policy implications and concludes.
+
+
+
+2      A Baseline Model of Innovation Disclosure
+We develop a model of bargaining over a divisible information good (e.g. an invention). A seller has an
+information good that can realize higher value if outside investment is achieved. They may seek investment
+from a buyer who does not observe the good’s value directly and must rely on disclosure by the seller to learn
+about its quality. However, any disclosure—whether partial or full—risks expropriation of the information
+by the buyer.
+
+2.1      Setup and Payoffs
+Types and disclosure. A seller i has a divisible information good ωi , privately drawn from a commonly
+known U ∼ [0, 1). We let ωi stand here for both the value of the seller’s information good and to denote the
+seller’s type. The buyer does not observe ω directly, and thus relies on the seller to disclose some portion
+ω̂ ≤ ω to convey its quality. The buyer is unwilling to invest without disclosure. However, if full or partial
+details are revealed, the buyer can expropriate them by engaging in ex post renegotiation with the seller.
+
+Outside Options. If the seller discloses nothing (ω̂ = 0), the buyer learns no information and thus
+receives their outside option which is normalized at 0. By retaining the invention, the seller obtains α0 ω,
+with α0 ∈ (0, 1].3 This discounted private value can be interpreted as the invention’s residual value if the
+seller must develop or commercialize it without the buyer.
+
+Payoffs from trade vs. expropriation. If the buyer invests—paying price P —we treat the joint surplus
+as ω̂, split via P in favor of the seller. More precisely,
+                                                           
+                         uS (ω; Invest) = P + α0 ω − ω̂ , uB (ω; Invest) = ω̂ − P.                (1)
+
+Alternatively, if the buyer expropriates the disclosed portion ω̂ outright, the payoffs become
+                                                         
+                       uS (ω; Expropriate) = α0 ω − ω̂ , uB (ω; Expropriate) = ω̂.                                     (2)
+
+2.2      The Breakdown Under Hold-Up
+It is straightforward to see that, once the seller discloses any ω̂ > 0, the buyer can expropriate it without
+paying. Hence the seller discloses ω̂ = 0, and the outcome is:
+
+                                              uS (ω) = α0 ω,       uB (ω) = 0.
+This is the familiar hold-up problem: no sale, no investment, and the seller is left with only partial value
+α0 ω.4
+    3 Together these conditions set the seller’s bargaining power higher than the buyer’s.
+                                                                                       We relax this assumption later as it
+has no bearing on our essential results–it just eases exposition here.
+   4 See Anton and Yao [1994] and Okuno-Fujiwara [1991] for analyses of partial disclosure equilibria. We attend to issues
+
+related to partial disclosure in Appendix A.
+
+
+
+                                                               4
+3     Building an Ironclad NDA: Trusted Execution and AI Agents
+3.1     AI Delegation via Secure Hardware
+We assume each player i can delegate decisions to a program Ai , which we call an agent. Formally, each
+agent Ai is a function                                   
+                                      Ai : xi , mj\i , εi 7−→ ai ,
+where
+    • xi is player i’s private input (e.g. the seller’s private ω),
+    • mj\i represents messages or data received from other agents,
+
+    • εi is a random variable capturing stochastic or approximate behavior by Ai ,
+    • and ai is the action chosen by agent Ai on behalf of player i.
+Each agent Ai aims to maximize player i’s payoff, subject to the noise or imprecision captured by εi . The
+agents A1 , . . . , An run inside a secure environment with cryptographic guarantees.
+
+Secure Execution Environment In practice, this secure environment may be implemented using trusted
+execution environments (TEEs). Real-world TEEs (e.g. Intel SGX) can run arbitrary code, permitting pro-
+grams (agents) to process private data while enforcing secrecy. While in theory other cryptographic primitives
+may offer similar benefits (see Appendix A for a brief survey), TEEs offer a practical and sufficiently general
+solution. Thus we treat agents as “TEE-resident” programs.
+
+TEE Functionality. We combine            the agents {Ai } into a single secure TEE function T . This function
+collects private inputs x1 , . . . , xn from the n players, mediates any necessary inter-agent messaging, and
+finally agent actions a1 , . . . , an . Thus:
+                                                                                  
+                                         T (x1 , . . . , xn ), ε = f a1 , . . . , an ,
+
+where ε = (ε1 , . . . , εn ) captures the randomness
+                                                  or error terms associated with each agent’s decision process.
+Inside T , each agent Ai receives xi , mj\i , εi and returns ai . If the environment is fully secure, no player
+learns more about another player’s private input than is revealed by the final outputs f (ai ), ensuring privacy
+and security.
+
+3.2     Provisioning the TEE
+The TEE is used to protect invention of value ω > 0 but in practice TEEs are not perfectly secure, and are
+periodically exposed to opportunistic hacks and jailbreaks. To secure against this, players may collectively
+employ n distinct Trusted Execution Environments (TEEs), each belonging to a different provider, and use
+a (k, n)-threshold encryption scheme with secret sharing. Concretely, each TEE holds only an encrypted
+partial share of the secret, so that no subset of size k − 1 or smaller can reconstruct ω. We assume colluding
+groups are precisely size k, since any larger groups e.g. k + 1 don’t attain more surplus (i.e. they would have
+the same ”characteristic function”.)
+   Observe that TEEs often employ physical micro-architectures and firmware [Costan and Devadas, 2016,
+ARM, 2020] that exhibit tamper-evident properties. For example, an attempted TEE breach may compro-
+mise the microcode or trigger platform-level logs, leaving a detectable trail. This gives rise to some positive
+probability of any breach, an effect which may compound under our scheme.
+
+
+
+
+                                                         5
+Modeling the Scope Conditions for Security Let p be the probability that a breach is detected. If
+caught, the provider incurs a penalty C. From the TEE provider’s perspective, the expected net benefit of
+colluding on a size-k expropriation is
+                                                    ω
+                                        (1 − pk )       versus the penalty   pk C.
+                                                    k
+Thus, to deter expropriation, the principals must ensure a k and ω such that the expected colluders’ gain is
+no larger than the penalty:
+                                                                              
+                                 k ω       k                  k 1 − (1 − p) k
+                           (1 − p )    ≤ p C =⇒ ω ≤                             C                       (3)
+                                    k                            (1 − p) k
+                                                              |      {z         }
+                                                                  Φ(k, p, C)
+
+Scope Condition on Secure Value. A secret of value ω is safe if and only if
+
+                                                          ω ≤ Φ.
+
+In other words, security holds whenever ω does not exceed the threshold Φ. We characterize this further in
+Appendix D, showing that for plausible parameter choices a threshold-TEE approach can plausibly protect
+quite large values.
+
+
+4      Perfect Agents, Perfect Security: The Main Theorem
+Next, suppose the seller and buyer both opt in to the TEE-based arrangement described in Section 3.
+Each party delegates to an agent Ai that runs securely within the TEE, exchanging data (like ω) without
+external leakage. This eliminates expropriation risk and leads to maximal secure disclosure within the scope
+conditions, ω̂ = min{ ω, Φ} and efficient trade.
+
+4.1      Mechanism and Timeline
+ (1) Nature draws ω ∼ U(0, 1), observed only by the seller.
+ (2) Delegation. Both parties choose whether to delegate to the TEE: if either refuses, we revert to the
+     baseline §2.2 outcome.
+ (3) Budget and thresholds. The buyer endows its agent AB with a budget P . The seller discloses some
+     value ω̂ ≤ Φ to its agent.
+ (4) Secure bargaining. Inside the TEE, AS privately reveals ω to AB (no risk of expropriation). The
+     agents bargain to on some split of ω. Then AB either (a)offers payment P̂ < P and indicates accept
+     to the TEE or (b) offers no deal, indicating exit to the TEE. AS checks that P̂ reflects the bargaining
+     split, indicating accept or exit.
+ (5) TEE Output. On mutual accept, the transaction completes and ω is released to the buyer and P to
+     the seller. If either agent indicates exit 5 the TEE deletes the session and terminates.
+
+4.2      TEE Equilibrium with Congruent Agents
+Bargaining Setup. Inside the TEE, the buyer’s agent and the seller’s agent solve a symmetrical Nash-
+bargaining problem over how to split ω̂. The seller’s threat point is α0 ω̂ (reflecting an outside option or
+status quo payoff), and the buyer’s threat point is 0. Formally,
+                                             
+                 max       uS − α0 ω̂ × uB − 0 subject to           uS + uB = ω̂, uS ≥ α0 ω̂, uB ≥ 0.
+                 uS , uB
+
+    5 Or some mutually agreed and pre-specified time elapses.
+
+
+
+
+                                                                6
+A straightforward Nash bargaining argument shows that the solution is
+                                                                           
+                         u∗S = α0 ω̂ + 21 ω̂ − α0 ω̂ ,   u∗B = 21 ω̂ − α0 ω̂ .
+
+It follows that the fraction of ω̂ accruing to the seller is given by
+                                                        1 + α0
+                                                  θ =          .                                            (4)
+                                                           2
+Accordingly, the buyer receives (1 − θ) ω̂ = 1−α
+                                               2
+                                                 0
+                                                   ω̂. We denote θ as the seller’s equilibrium share throughout
+the analysis.
+   Hence, the price the buyer pays in equilibrium is
+
+                                                   P ∗ = θ ω̂,                                              (5)
+
+matching the split derived above.
+
+Buyer’s Budget Choice. Since in equilibrium the largest possible ω̂ = min{ ω, Φ}, a lower budget risks
+losing out on high-type deals, while a higher budget would allow overpayments exceeding the total surplus.
+This yields:
+                                              P = min{ ω, Φ}
+
+                                                             d u∗
+Seller’s Disclosure Choice. It’s straightforward that d ω̃S > 0, and so the seller’s utility is increasing in
+disclosure (possibly bound by the security constraint). The seller thus discloses to the agent:
+
+                                              ∀i, ω̂i = min{ ωi , Φ}
+
+If ω < Φ, then all sellers disclose maximally to agents who, by the same logic, disclose within the TEE. If ωi >
+Φ, the seller discloses only ω̂i = Φ (because revealing more is insecure), and the buyer pays min{θ ωi , θ Φ}.
+Theorem 1 (TEE Mitigates Hold-Up). Under the TEE arrangement with maximally aligned agents and
+sufficient security ω ≤ Φ the unique equilibrium outcome is full disclosure (ω̂ = ω) and investment at
+price P = θ ω. Both parties strictly prefer this agreement over the no-TEE baseline, which gives (α0 ω, 0).
+Simply, because the TEE prevents misappropriation, the seller’s agent AS freely discloses ω to AB . The
+buyer’s agent then pays P = θ ω, which is accepted because it meets AS ’s threshold. Both sides are strictly
+better off than the fallback equilibrium (α0 ω, 0). No deviation is profitable, so this outcome is unique.
+Note Equivalent logic holds for ωi > Φ. If ω > Φ, the seller discloses Φ, earning a correspondingly higher
+payoff than the outside option α0 ω, though not the full ω. In this case some fraction of the invention’s
+surplus remains undisclosed and unsecured. This partially mitigates hold-up, making both parties better
+off, but not fully eliminating it.
+    Theorem 1 shows how secure TEEs plus perfectly congruent agents can resolve Arrow’s disclosure–expropriation
+dilemma, at least with respect to some security bounds. In practice, of course, real AI agents are imperfect.
+We address that next.
+
+
+5    Robustness to Agent Errors: How Good Do These Agents Need
+     to Be?
+We now relax the assumption of perfectly aligned, error-free agents. In reality, the buyer’s agent may
+occasionally overpay, while the seller’s agent might misreport ω. Rather than causing a complete breakdown
+of the agreement, these mistakes are constrained by two natural features of the mechanism: (i) the buyer’s
+budget cap, which prevents unbounded overpayment, and (ii) the seller’s acceptance threshold, which rejects
+overly low offers. Even if errors are frequent, these features ensure that most realized payoffs remain above
+the no-TEE baseline.
+
+
+                                                        7
+Illustrative Example
+Suppose the buyer instructs its agent AB to pay P (ω) = θ ω whenever the TEE confirms a disclosure of size
+ω. Now introduce a random error eb (with mean 0) to this payment. If eb is sufficiently negative, the offered
+payment falls below θ ω, and the seller’s agent rejects, yielding no trade. If eb is positive, the buyer would
+attempt to pay θ ω + eb , but the budget cap P truncates extreme overpayment. In expectation, this setup
+limits the buyer’s downside while ensuring the seller receives its intended payoff θ ω.
+   To see this effect more explicitly, let ΠB be the buyer’s ex-ante expected payoff, net of any errors. As we
+show in Appendix C, it naturally decomposes into three components:
+
+   ΠB = (no-error baseline payoff) − (loss from underpayment rejections) + (budget-cap offset) .                 (6)
+        |           {z           }   |                {z               }   |       {z        }
+                       (1)                                                    (2)                          (3)
+
+The first term is the buyer’s surplus if there were no mistakes, the second captures forgone gains when
+negative errors scuttle deals, and the third term reflects savings from the budget cap’s truncation of large
+positive errors.
+Corollary 1 (Robustness to Agent Errors). There exists a positive threshold of error magnitudes (Esmax , Ebmax )
+below which each player’s ex ante payoff under the TEE mechanism remains strictly above their baseline (no-
+TEE) payoff. Hence the mechanism is robust to imperfect agents for a broad range of error levels.
+
+
+
+Comparison: Budget-Capped vs. No Cap
+To visualize this robustness, Figure 1 plots the buyer’s expected payoff ΠB (θ, Eb ) as a function of the error
+magnitude Eb , under two regimes: one with a budget cap (solid line) and one without (dashed). For θ = 0.6,
+the buyer’s payoff without any cap crosses zero once Eb grows to 0.4, while the payoff with a cap remains
+positive up to Eb = 0.6. In other words, a budget cap “buys more tolerance” for error before the mechanism
+ceases to deliver strictly positive returns.
+
+                                                    0.2
+                                                                                Budget Cap (solid)
+                        Buyer payoff ΠB (θ, Eb )
+
+
+
+
+                                                                                 No Cap (dashed)
+
+                                                    0.1
+
+
+
+                                                      0
+
+
+
+                                                   −0.1
+                                                          0   0.1     0.2     0.3    0.4     0.5     0.6
+                                                                    Eb (overpayment error)
+
+Figure 1: Comparison of the buyer’s expected payoff under a budget cap (solid) vs. no cap (dashed), for
+θ = 0.6. The no-cap payoff crosses zero at Eb = 0.4, whereas the budget-capped payoff remains positive
+until Eb = 0.6.
+
+Implication. Despite the introduction of noise in either the buyer’s or seller’s agent, a simple budget
+constraint prevents unbounded losses for the buyer, while the seller’s acceptance threshold rejects low pay-
+ments. As a result, both sides still find it strictly profitable to delegate to the TEE for any moderate level
+of error. This illustrates that *even if AI agents deviate substantially from their prescribed instructions*,
+the TEE-based arrangement generally preserves the core benefits of secure disclosure.
+
+
+                                                                          8
+6     Conclusion and Policy Implications
+6.1    Implications for Policy and Regulation
+Our analysis shows how trusted execution environments (TEEs) can drastically reduce the expropriation
+risk inherent in disclosing valuable inventions or ideas. From a policy perspective, this highlights several
+opportunities:
+
+    • Promoting secure hardware adoption. Governments or regulators looking to spur innovation
+      might consider incentives for broader TEE use—e.g., certifying TEE security standards or funding
+      research to better secure them.
+    • Supporting a market for “secure collaboration.” Institutions (funding agencies, public research
+      labs) could provide or subsidize common TEE infrastructures. This would facilitate safer partner-
+      ships between inventors, investors, or large R&D labs, potentially leading to more rapid technological
+      diffusion.
+    • Strengthening or clarifying liability rules. Where TEEs are not yet fully reliable, clarifying the
+      legal ramifications of agent misbehavior or data leaks can complement the hardware solution. Hy-
+      brid arrangements—secure hardware plus more effective “breach liability”—can offer robust protection
+      without stifling cooperative innovation.
+
+   In short, the policy takeaway is that cryptographic or hardware-based solutions can be a powerful sup-
+plement to legal frameworks like patents or NDAs. Far from a minor improvement, these methods can
+transform disclosure from a perilous gamble to a routine, secure transaction, thereby mitigating Arrow’s
+core information paradox.
+
+6.2    Limitations and Possible Extensions
+While our model shows the promise of TEE-based disclosure, several limitations remain:
+
+    • Hardware trust assumptions. We assume TEEs are fully secure. In reality, side-channel attacks
+      and other vulnerabilities could undermine secrecy if the hardware is compromised. A ideally secure
+      implementation under today’s technology would supplement the TEE with other security measures,
+      such as ”proof of cloud” to secure against physical access.
+    • Agent collusion or correlation of errors. We treat agent errors as idiosyncratic and independent
+      of the invention’s complexity. If errors become systematically larger for more complex inventions, the
+      model’s predictions may require re-examination. Because of the budget cap, this is unlikely to affect
+      incentive compatibility but may affect surplus, perhaps substantially.
+    • Real-world adoption frictions. Institutional inertia, user mistrust of agents or “black-box” solu-
+      tions, or high costs could slow TEE adoption, potentially limiting their transformative impact on R&D
+      collaboration.
+
+    Addressing these issues might require combining trusted hardware with further security measures or
+legal guarantees. Future work can incorporate these real-world frictions into the theoretical framework,
+illuminating how robust the TEE solution remains under more complex settings.
+
+6.3    Summarizing
+We studied the fundamental problem of disclosing valuable information under the threat of expropriation.
+Drawing on the classical tension posed by Arrow [1971] and Nelson [1959], we developed a model in which
+a seller (the inventor) cannot fully appropriate her innovation if she reveals it prematurely. Traditionally,
+such scenarios yield low- or no-disclosure equilibria, stifling socially beneficial trades.
+   Our main contribution is to show that trusted execution environments (TEEs) together with AI agents
+can restore efficient disclosure. By delegating the decision process to secure programs that verify invention
+
+
+                                                     9
+quality without unconditionally revealing it to the buyer, the seller can disclose confidentially, extract fair
+compensation, and thus avoid hold-up. Even when the agents themselves are imperfect—subject to “errors”
+in disclosure or payment—the mechanism remains robust for a broad range of error magnitudes, thanks to
+natural design features such as budget caps and acceptance thresholds.
+    This framework has broad implications. It effectively provides an “ironclad NDA,” substituting for un-
+certain legal enforcement with cryptographic or hardware-level assurances. Policymakers seeking to promote
+R&D can encourage TEE adoption to mitigate risks that often deter inventors from sharing their break-
+throughs. Future work can enrich this approach by analyzing repeated interactions, reputation effects, or
+competition among multiple buyers. Our results highlight that, as trusted hardware and AI advance, we
+may see a new paradigm of secure information exchange—expanding the frontiers of innovation without the
+specter of expropriation.
+
+
+
+
+                                                      10
+Appendix
+A      Discussion of Alternate Cryptographic Techniques to solve the
+       Disclosure Game
+Our main analysis relies on Trusted Execution Environments (TEEs) to implement a secure, tamper-proof
+environment for disclosure. However, other cryptographic primitives and protocols could, in principle, achieve
+similar functionality under different trust or disclosure structures. In this section we will attend to some
+alternatives one might consider that don’t rely on trusted hardware assumptions.
+
+Virtues of the TEE setting In our setup, “Agents” stand in for the players and bargain in a secure
+environment without fear of disclosure. We regard it as helpful that agents can interact (bargain) in an
+“open” way that simulates full disclosure and inspection as one might find in a real-world transaction. The
+TEE ensures that this openness does not introduce expropriation risks. It does of course introduce agency
+risks, which we attend to directly in the main body of the text as errors.
+
+A.1     Partial Revelation Approaches using ZK or FHE
+Cryptographic primitives like Zero-knowledge Proofs (ZKP) or Fully Homomorphic Encryption (FHE.)6
+could allow sellers to prove (or buyers to query) some aspects of a good while protecting others. In our
+baseline game, the seller might prove that “ω contains a process that can produce property z” without
+revealing the process itself.
+    These approaches are extremely useful and could be used cleverly to enhance our scheme. But we note
+two drawbacks of proving only some selective aspects of a good without revealing the good itself: adverse
+selection faced by the buyer and externalities from partial revelation faced by the seller.
+
+Adverse Selection under “proof ” schemes Observe that the buyer would like to know all properties
+of the good that would be pertinent to their decision. Learning presumably positive properties like “x can
+lift 10,000 pounds with gasoline consumption < y” might sound enticing to someone who thinks they are
+buying a forklift. But suppose when they complete the purchase based on learning this x turns out to be
+an elephant. The proven property does of course hold, but the buyer wasn’t fully informed without knowing
+e.g. “x responds poorly to emotional neglect and needs to consume 40 gallons of water daily.” The buyer,
+by not considering whether to ask about emotional neglect, has been adversely selected against.
+     Thus the buyer must play a complex version of 20 questions or risk adverse selection. And meanwhile,
+proving each property as above involves costly computation at every step. The key insight for our setting is
+that, intuitively, knowing x itself (e.g. if it is an elephant or a forklift) better enables a buyer to home in on
+the relevant properties to be proven. This is a virtue of mechanisms like TEE Disclosure which enable x to
+be directly disclosed and thereby guide an assessment of the relevant properties.
+
+Externalities from partial revelation Even disregarding adverse selection and the costs of mitigating
+it, partial disclosure itself may leak valuable information. It’s sometimes the case that knowing a property
+holds (or knowing that a certain feat is achievable) is itself highly valuable information. Thus, if we would
+like to prove ”ω contains a process that can produce property X”, without revealing the process, even that
+partial revelation would constitute valuable disclosure.
+    Scientific and industrial history abounds with cases where the mere fact that a problem has been solved
+or that a certain threshold is achievable can guide or accelerate rivals’ efforts. A paradigmatic example is
+the Manhattan Project during World War II, where both the methods and the very properties of nuclear
+enrichment (e.g., that process x can enrich isotope y at scale) were kept highly classified. Simply disclosing
+   6 Zero-Knowledge Proofs allow one party (the “prover”) to convince another party (the “verifier”) of a statement’s truth
+
+without disclosing any additional information about the underlying data. Fully Homomorphic Encryption (FHE) permits
+arbitrary computations on encrypted data, so that a party (the buyer) can run calculations on an encrypted ω without ever
+decrypting it.
+
+
+
+
+                                                            11
+‘Yes, we achieved a controlled nuclear chain reaction” would have been enough to direct competing programs
+away from blind alleys and expedite their progress.
+    Hence, in cases where properties themselves may be valuable, partial revelation schemes can be insuffi-
+cient, or inadvertently leak too much.
+    At the limit it remains unrealistic–and perhaps impossible–that the buyer proves and seller evaluates the
+set of all properties that pertain to x without the seller essentially learning x. As a result, partial revelation
+protocols are still constrained by expropriation risk which can reduce the buyer’s willingness to pay and the
+seller’s value.7
+
+Summarizing While cryptographic approaches like ZKP and FHE offer powerful tools for selective reve-
+lation, they face inherent limitations when used to prove properties without revealing the underlying good.
+Buyers risk adverse selection from unknown properties they didn’t think to query, while sellers face external-
+ities from partial revelation. We now turn to schemes that enable secure disclosure of the good itself, which
+allows buyers to properly assess its complete set of relevant properties.
+
+A.2     Full revelation using Secure Multi-party Computation (MPC) or Indistin-
+        guishability Obfuscation (iO)
+Secure Multi-Party Computation Another possible approach is to run a multi-party computation
+(MPC) protocol, perhaps combined with a threshold signature scheme, where no single party holds all the
+information needed to reconstruct the invention ω or forcibly expropriate it. Instead, the information and
+any necessary keys could be split among multiple signers, and the protocol would reveal output only if
+enough signers collectively approve.
+    Indeed, we use such a setup to enhance the TEE security in our model. In practice, attending to the
+risk of collusion among threshold signers, or avoiding the potential for the “threshold” signer to acquire
+extractive bargaining power, is a strategic problem to be solved. MPC is not a standalone substitute, but
+rather a complement here and in general using it requires the sort of strategic considerations which we have
+attended to.
+
+Indistinguishability Obfuscation Indistinguishability Obfuscation (iO ) is a powerful cryptographic
+primitive that, if realized in practical form, could theoretically replicate the core TEE functionality: it
+would allow the agents to operate within an “obfuscated” program, checking and disclosing all properties of
+the seller’s invention ω, without leaking information about the invention or its properties. At a high level, iO
+means that if you have two equivalent circuits (they produce the same input-output mapping) run programs,
+the resulting obfuscated programs are computationally indistinguishable.
+    In principle, one could obfuscate the logic so that the players obtain only an ultimatum (e.g. “agree”
+or “disagree”) without learning any internal details of the invention ω. This mirrors the TEE’s role in
+preventing expropriation: the invention or its properties are never revealed in the clear. And these assurance
+would be stronger as they would be provable by math rather than hardware design and incentives, as TEEs
+are. While iO doesn’t produce ”stateful” execution, it could be combined with blockchains to replicate such
+properties.
+    That said, iO remains largely theoretical today, requiring complex hardness assumptions and lacking
+widely accepted, efficient constructions. This makes it a less practical choice compared to TEEs (which are
+commercially available commodities), but it remains conceptually interesting for future research.
+
+Summary
+In short, while each of these cryptographic primitives can accomplish some version of “secure disclosure,”
+their off-the-shelf usage often either imposes costs on the buyer and/or leaks valuable partial information
+(ZKP, FHE) or introduces new trust assumptions (threshold schemes) or relies on still mostly theoretical
+constructions (iO). By contrast, trusted execution environments (TEEs) combine (a) hardware-enforced
+   7 We may imagine designing more elaborate ZK or FHE schemes wherein e.g. information about valuable properties is
+
+coarsened and incrementally revealed conditional on payment, they would be very costly and even ignoring this it is unclear
+whether even careful information design could fully protect against leakage while ensuring against adverse selection.
+
+
+                                                            12
+security guarantees with (b) market availability (e.g. Intel SGX) and (c) straightforward enforcement of
+“all-or-nothing” payoffs. Thus, in our model, TEEs are a conceptually and practically simple device for
+guaranteeing full disclosure without expropriation or unintended leakage.
+
+
+B     Strategic Subtleties
+Below follow remarks on some aspects of the model which are second order for our main results but never-
+theless merit some discussion.
+
+B.1    Remarks on Errors in the Surplus Split
+A distinct issue is how split errors could affect payoffs conditional on successful trade. That is, agents
+could achieve a feasible (and possibly full) surplus but still err in how they split that surplus (e.g. paying
+Pe 6= P ∗ (ω̂) inside the feasible region). But such deviations matter only once the acceptance constraints are
+satisfied. That is, both parties have been made better off in expectation. Thus split errors are second-order
+in determining whether the TEE solution strictly dominates the baseline. Rather than treat them in more
+detail, we can simply note the fact that each player would tolerate these errors but would of course prefer
+them to be as small as possible.
+
+B.2    Budget Constraints as commitment
+One might observe that the buyer’s agent is given a budget and, under some special conditions, that this
+could change the bargaining conditions within the TEE. Strictly speaking, a budget constraint should just
+act to reduce the overall surplus in Nash Bargaining, making both players worse off. However it can be the
+case that a strong budget constraint could act as a credible commitment to capture the surplus of some
+portion of the SA with an outside option (α0 ω) less than the budget. The intuition here is that under the
+Nash Bargaining solution, sellers should capture a positive portion of the surplus above their outside option.
+A credible commitment to only pay less than that surplus (but still more than the outside option) would
+be profitable to these agents. For the commitment to be truly credible, however, this budget constraint
+would mean other agents that have α0 ω larger than the budget constraint could not paid at all, leaving the
+buyer with 0. This will of course depend on the (exogenous) value α0 , since it governs the Nash Bargaining
+solution and determines how much of the surplus there is to appropriate. It will also depend on some
+detailed characteristics of the distribution F (ω). Effectively, given some α0 and F (ω), the buyer would seek
+to identify whether there is a point such that the surplus extraction region of the derived distribution first
+order stochastically dominates the opportunity cost region.
+    While it might be interesting to characterize the distributions for which this strategy might or might
+not hold, there are other reasons it might not be tenable. For one, if we assume revelation and value of
+the information good is at least partially divisible, then sellers could respond to this credible commitment
+by “un-revealing” the information. That is, since they can be thought of as bargaining over the value
+transmitted to the players, the seller could just respond by proposing a Nash split of less than the value
+of the good. This would unravel the commitment and the buyer would be no better off. One could also
+require mutual inspection of the budget beforehand, or introduce a condition where the buyer must reveal
+the budget in the TEE or else.
+
+B.3    Efficient overpayment in the TEE
+In the main text, we studied the buyer’s attempt to pay p̂(ω) = θ ω, subject to a random error eb ∼
+Unif(−2θ, 2θ). This could lead to “underpayment” (i.e. p̂(ω) + eb < θω), thus killing the trade. A natural
+idea is for the buyer to add a constant buffer d > 0 so that the intended payment is
+
+                                              p̂(ω) = θ ω + d.
+
+Intuitively, d should be large enough to offset typical negative errors eb , yet not so large that the buyer
+“systematically” overspends and destroys its expected surplus.
+
+
+                                                      13
+1. Gains from the newly accepted region eb ∈ [−d, 0). - When d = 0, the interval [−d, 0) = [0, 0) is
+empty, so no trade for eb < 0. - For small d > 0, we now accept any eb ≥ −d. - Hence the measure of newly
+                                     d
+accepted (ω, eb ) is approximately 4θ   for each ω.
+    - In that newly accepted strip, the buyer’s payoff is ω − (θ ω + d + eb ). As d → 0, eb is near −d/2 on
+average, so that payoff is roughly ω − θ ω + 0 + (−d/2) = ω(1 − θ) + d2 .
+    - Averaging ω over [0, 1] gives E[ω] = 21 , so the typical net gain for newly accepted trades is about
+1           d                                     d
+2 (1 − θ) + 2 . Multiplied by the tiny measure 4θ , this yields a first-order term in d of size
+                                  
+                               1−θ    d      1−θ                           2
+                                2    4θ = 8θ d (ignoring smaller O(d ) terms).
+
+
+2. Cost from paying extra d in the already accepted region eb ∈ [0, θ − θω]. - At d = 0, all eb ≥ 0
+are accepted. - For d > 0, whenever eb ≤ θ − (θ ω + d), the actual payment is (θ ω + d + eb ), i.e. we pay an
+extra d. - Near d = 0, that region is basically eb ∈ [0, θ(1 − ω)], exactly as before but now with an added d.
+   - The measure of that region—integrating eb over [0, θ(1 − ω)] and ω over [0, 1]—comes out to 18 when
+d = 0. (Half the eb distribution is [0, 2θ], and integrating (1 − ω) from 0 to 1 yields 1/2 overall, etc.)
+   - Thus the incremental cost is 81 d to first order, because we are effectively paying d extra in that entire
+portion of the state space.
+
+Net derivative at d = 0. Putting these two together,
+
+                 ∂ΠB (θ, d)                     1−θ                      1             1−θ    θ   1 − 2θ
+                                =                8θ             −        8         =       −    =        .
+                   ∂d       d=0                 |{z}                   |{z}             8θ   8θ     8θ
+                                        (newly accepted gain)       (extra cost)
+
+Hence:
+                                            ∂ΠB (θ, d)
+                                                           >0           ⇐⇒         θ < 21 .
+                                              ∂d       d=0
+
+
+C      Derived equilibrium under agent errors
+Two natural aspects our setting serve to blunt the negative impact of agent errors:
+    1. In order for exchange to take place, the buyer’s agent must be endowed with a budget. This budget
+       substantially reduces overpayment risk even while remaining sufficient to pay for the highest value
+       disclosures.
+    2. The seller’s agent under-disclosing decreases surplus, but does not affect the seller’s willingness to use
+       the TEE.
+    Our key finding is that the TEE mechanism is surprisingly robust, preserving most of the efficiency gains
+even with substantially flawed agents. Viewed more broadly, this suggests that even today, with imperfect
+AI systems, the secure environment plus a bounded budget can achieve the “perfect NDA” benefits.
+    We now relax the assumption that agents are maximally congruent and introduce agent errors. Specifi-
+cally, let εS and εB denote the respective errors made by the seller’s agent (AS ) and the buyer’s agent (AB ).
+These errors can be large and may have broad supports, but for simplicity we assume they have mean zero.8
+    Because only those errors that occur at the threshold between accepting an offer or reverting to the
+baseline no-disclosure equilibrium actually affect equilibrium outcomes, we focus on disclosure errors for AS
+and payment errors for AB . Intuitively, an error that pushes the buyer’s offer below the seller’s minimum
+acceptance level (or vice versa) leads to breakdown, eliminating gains from trade. We show that the TEE-
+based mechanism remains robust against moderate errors: the budget cap truncates extreme overpayments,
+while any underpayment is rejected. Consequently, both parties still prefer delegating to TEE agents ex
+ante, and the inefficiency caused by errors is generally well-contained.
+    8 Any systematic bias can be offset by appropriately adjusting parameters; e.g. if A systematically overpays, one can instruct
+                                                                                        B
+it to “shade down” its payment accordingly.
+
+
+
+                                                                14
+C.1      Seller’s Disclosure Error
+The seller’s agent AS can disclose any internal value ω̃ ≤ ω agent ≤ ω, where ωagent is chosen by the seller
+outside the TEE. Suppose AS suffers anexecution error εS , so that in practice
+
+                                                       ω̃ = ω + εS .
+
+    But in practice, errors in disclosure cannot be positive.9 . Nor can agents disclose a negative value, which
+would imply they somehow reduce the ex ante information of their counterparty.10 This ensures that the
+seller’s agent can only underdisclose (0 ≤ εS ≤ ω), which remains strictly incentive-compatible for the seller
+in the TEE framework. As such, these disclosure errors do not influence the seller’s ex ante decision to enter
+the TEE and are thus inconsequential for our main results.
+    As a result, εS can be interpreted as “underdisclosure”. However, because expropriation is ruled out
+inside the TEE, any deliberate underdisclosure (ω̃ < ω) only reduces the total surplus and thus the seller’s
+bargaining share. Hence no rational seller intentionally sets ω agent < ω or withholds information from AS .
+    Nor does AS create gains from strategic withholding. If AS underreports by δ > 0 on purpose, the seller’s
+outside option remains α0 ω, but the bargaining surplus is now based on ω − δ < ω, strictly decreasing the
+seller’s payoff. As a result,
+
+             ω̃ = ω − εS     with    εS ≥ 0      =⇒     (seller’s error only, no strategic underreporting).
+
+Any partial disclosure thus arises from agent imprecision, not from expropriation concerns.
+
+Conclusion. In equilibrium, AS receives the entire ω from the seller, and discloses ω̃ ≈ ω to the buyer’s
+agent (except for random nonstrategic underdisclosure). We therefore treat ω as the relevant disclosure level
+in subsequent analyses, focusing on the buyer’s errors next.
+
+C.2      Buyer’s Overpayment Error and Incentive Compatibility
+As before, let ω ∼ U(0, 1) denote the type and value for the seller (known to AB based on disclosure).
+And again we have the buyer’s agent AB , which aims to pay p̂(ω) = θ ω but is now subject to a random
+overpayment error eb ∼ U [−Eb , Eb ].
+    We impose a ”minimal separation” condition Eb < 2θ. This ensures that parameters remain in a range
+where the incentive constraints do not fully pool the highest type with the lowest type in expectation. Any
+larger errors would suggest that the buyer could expect to profitably pay the same amount to all types–these
+would be degenerate cases in which much simpler mechanisms would suffice.11
+
+Seller’s acceptance threshold. As before, the seller requires at least θ ω. Because p̂(ω, eb ) ≥ θ ω is
+equivalent to eb ≥ 0, negative draws always kill the trade. Hence trading occurs only when eb ∈ [0, Eb ].
+
+Ex-post payoffs.        When trade occurs (eb ≥ 0), the buyer’s realized payment is
+
+                                              p(ω, eb ) = min{ θ ω + eb , θ}.
+
+Thus:                                     
+                             
+                              ω − θ ω + eb ,          if 0 ≤ eb ≤ θ − θ ω, (under-budget regime)
+                             
+                             
+                uB (ω, eb ) = ω − θ,                   if θ − θ ω < eb ≤ Eb , (budget-constraint regime)
+                             
+                             
+                             
+                             0,                       if eb < 0 (no trade).
+   9 Being type ω means you can disclose, at most ω.     A player (or agent) logically cannot reveal more information value than
+it possesses.
+   10 Even if possible they would be required to pay for this reduction under Nash bargaining, and so the fact that A has no
+                                                                                                                        S
+endowed budget would mean the buyer rejects the deal and the game reverts to baseline payoffs.
+   11 Paying every seller the highest type’s value conditional on disclosure would be fully incentive compatible.
+
+
+
+
+                                                              15
+Buyer’s Ex-Post Payoff and Regions
+For a given ω and error draw eb , define
+
+                                                p(ω, eb ) = min{ θ ω + eb , θ}.
+
+Then the ex-post payoff for the buyer is
+                            
+                            
+                             ω − (θ ω + eb ), if 0 ≤ eb ≤ θ − θ ω (under-budget region),
+                            
+                            
+              uB (ω, eb ) = ω − θ,             if θ − θ ω < eb ≤ 2θ (budget-capped region),
+                            
+                            
+                            
+                            0,                if eb < 0 (no-trade region).
+                                                           1
+Since eb is uniform on −2θ, 2θ , each region has PDF weight 4θ . The buyer’s overall ex-ante payoff is
+                                                        Z 1 Z 2θ
+                                                                                  1
+                                          ΠB (θ) =                 uB (ω, eb )      deb dω.
+                                                         0   −2θ                 4θ
+
+Partitioning the Integration and Computing
+1. No-Trade Region (eb < 0): No trade occurs, so uB (ω, eb ) = 0. Hence no contribution to the integral.
+
+2. Under-Budget Region (0 ≤ eb ≤ θ − θ ω): Here the buyer pays θ ω + eb and thus obtains
+
+                                                uB (ω, eb ) = ω − (θ ω + eb ).
+
+We integrate over eb from 0 to θ(1 − ω):
+                        Z θ(1−ω)                                          Z θ(1−ω)
+                                                   1         1                                    
+                                    ω − (θ ω + eb )     deb =                            ω − θ ω − eb deb .
+                         0                           4θ       4θ           0
+
+Carrying out the integral:
+
+                    1 h               e2
+                                         i θ(1−ω)    1 h                            2      2
+                                                                                             i
+                =      ω eb − θω eb − 2b          =     θ ω(1 − ω) − θ2 ω(1 − ω) − θ (1−ω)
+                                                                                       2       .
+                    4θ                    0         4θ
+Factor out θ:
+                                           ω(1 − ω)   θ ω(1 − ω)   θ (1 − ω)2
+                                      =             −            −            .
+                                              4            4            8
+
+3. Budget-Capped Region (θ(1 − ω) < eb ≤ 2θ):                       Now the buyer hits the budget cap θ, so
+
+                                                     uB (ω, eb ) = ω − θ.
+
+Integrate eb from θ(1 − ω) to 2θ:
+                                   Z 2θ
+                                                         1       ω−θ h             i
+                                              [ω − θ]      deb =      2θ − θ(1 − ω) .
+                                    θ(1−ω)              4θ        4θ
+
+Note 2θ − θ(1 − ω) = θ + θω. Hence
+
+                                              ω−θ        (ω − θ)(1 + ω)
+                                          =       θ 1+ω =                .
+                                               4θ               4
+
+
+
+
+                                                                   16
+Summing and Integrating over ω
+Denote the sum of the under-budget and budget-capped integrands by f (ω, θ). Then
+                      Z 1h                                          i     Z 1
+             ΠB (θ) =     under-budget payoff + budget-capped payoff dω =     f (ω, θ) dω.
+                         0                                                                             0
+
+A straightforward (if tedious) computation shows
+                                               Z 1
+                                                                          6 − 11 θ
+                                                      f (ω, θ) dω =                .
+                                                  0                          24
+
+Thus the buyer’s expected payoff is
+                                                                    6 − 11 θ
+                                                      ΠB (θ) =               .
+                                                                       24
+A final check for when θ = 0:
+                                                        6−0      1
+                                                  ΠB (0) =    = ,
+                                                         24      4
+This matches the correct outcome for θ = 0, in which the buyer effectively pays 0 for an invention whose
+average value is 12 , but since (under buyer error) trade only happens half the time the payoff is 14 .
+Proposition 2 (Buyer’s Payoff Under Minimal Separation). Under θ ∈ (0, 1) and eb ∼ Unif(−2θ, 2θ), the
+buyer’s ex-ante payoff from attempting to pay p̂(ω) = θ ω is
+                                            Z 1Z 2θ
+                                                                        1           6 − 11 θ
+                              ΠB (θ) =                    uB (ω, eb )      deb dω =          .                           (7)
+                                              0   −2θ                   4θ             24
+                                                                                     6
+In particular, ΠB (θ) is strictly decreasing in θ, and remains positive for all θ < 11 .
+
+Interpretation.     A convenient decomposition is:
+                                   1−θ                                    1                         θ + 6
+                ΠB (θ) =                              −                                      +                       .   (8)
+                                     2 }
+                                   | {z                                   2
+                                                                         |{z}                       | 24
+                                                                                                      {z }
+                             (1) no-error baseline        (2) lost trade from underpayment       (3) budget offset
+
+
+Term (1) is the buyer’s payoff if no errors existed (i.e. always paying θ ω). Term (2) reflects the fact that
+half of all draws (eb < 0) kill the trade, costing the buyer that baseline surplus. Term (3) represents the
+positive offset recouped when eb ≥ 0, because (i) some payments stay below the cap, limiting overpayment,
+and (ii) the cap itself forbids extremely large payments when eb is big. These partial recoveries net out to
+θ+6
+ 24 , so that overall ΠB (θ) is strictly decreasing in θ but remains nonnegative for moderate θ.
+
+
+Maximum Error Threshold We may also solve for the largest error amplitude that the buyer can
+tolerate while still retaining nonnegative surplus. That is, the buyer’s ex-ante payoff is zero when
+                                     6 − 11 θ                                    6
+                                              = 0            =⇒         θ∗ =       ≈ 0.545.
+                                        24                                      11
+Hence the maximum half-range of error is
+                                                                        12
+                                               Eb∗ = 2 θ∗ =                ≈ 1.09.
+                                                                        11
+For all θ ≤ 6/11 (i.e. for Eb ≤ 12/11), the buyer’s ex-ante payoff remains strictly positive. This demonstrates
+the surprising fact that even under an unfavorable split for the buyer (θ > .5) the budget cap allows them
+to tolerate errors slightly larger than the entire surplus value.
+
+
+
+
+                                                                 17
+C.3     Summary: Impact of Agent Errors
+Despite random overpayment errors, the budget cap prevents unbounded losses. Hence, so long as eb (or its
+half-range) remains below some positive threshold, the buyer’s ex-ante payoff, ΠB (θ), exceeds the baseline
+payoff of 0, making the TEE-based delegation worthwhile. Meanwhile, any disclosure errors by the seller
+remain bounded above by ω ∈ [0, 1], so the seller still finds the positive payment superior to reverting to a
+trivial “no disclosure” regime.
+    Thus, for surprisingly high error levels, the TEE arrangement remains ex ante incentive compatible for
+both sides.
+Corollary 2 (Robustness to Agent Errors). Even with random errors in both buyer and seller agents,
+there exists a strictly positive threshold of error magnitudes (Ebmax , Esmax ) such that both parties strictly
+prefer delegating to the TEE mechanism over reverting to the baseline. For sufficiently moderate errors, the
+mechanism remains ex ante incentive compatible and Pareto-improving.
+Discussion. Corollary 2 underscores that one need not assume flawless AI agents to reap the gains from
+secure delegation. By “capping” overpayments at θ and rejecting underpayments (i.e. eb < 0), both sides
+avoid informational hold-up. Larger errors may eventually erode all surplus, but for moderate ranges of
+agentic miscalculation, TEE maintains positive net benefits.
+
+
+D      Extended Model of TEE Security
+Principles and TEE Providers Let there be n distinct TEEs (trusted execution environments), each
+belonging to a different provider i = 1, . . . , n. To maximize security, the invention or secret with value
+ω ∈ R+ is protected via an encryption scheme (e.g. threshold encrypted MPC with secret sharing) to ensure
+jailbreaks short of k don’t leak partial value.
+    Concretely, each TEE i holds an encrypted partial share which is worthless on its own if fewer than k
+TEEs collude. Only a subset of size |S| ≥ k can combine their shares to fully recover ω.
+    Extending from the main text, we have:
+    • ω as the total value being secured.
+    • k is the collusion threshold in the (k, n)-encryption scheme (we abstract from n here),
+    • pk is the probability that a subset of size k is detected when colluding,
+    • C is the penalty for being caught (e.g. legal and reputational costs),
+    • c is any fixed cost for the principal of using the AI agents, TEEs, MPC, etc.
+    The principal’s optimization problem is:
+                                                                   ω
+                          max ω − c subject to the IC: (1 − pk )         ≤ pk C,
+                            k                                         k
+   We assume pS weakly increases in k, reflecting the idea that larger conspiracies are more conspicuous. A
+natural functional form for correlated detection is
+                                                  γ
+                             pk = 1 − (1 − p) k ,     with γ > 1 and 0 < p < 1.
+Substituting into the IC constraint gives:
+                                          ω                   γ  ω
+                                (1 − pk )   = (1 − ( 1 − p ) k )   ≤ pk C,
+                                          k                      k
+                         γ
+where 1 − pk = (1 − p) k . Rewriting:
+                                                               γ
+                                               k 1 − (1 − p) k
+                                         ω ≤                      C.
+                                                   (1 − p)kγ
+This bound on ω ensures that a subset of size k finds collusion unprofitable. Because detection typically
+increases with bigger subsets, any group larger than k faces even higher detection probability, so deterring
+size k effectively deters ℓ > k as well.
+
+                                                      18
+Remark on the exponent γ. Under γ = 1, pS = 1 − (1 − p)|S| , this describes a situation where the
+detection of each TEE jailbreak is an independent event, with collusion adding no new source of scrutiny.
+12
+   By contrast, when γ > 1, the detection probability rises faster than the independent case, modeling the
+idea that conspiracies involving multiple TEE provders are more easily spotted (e.g. more “moving parts,”
+higher chance someone leaks, etc.).
+
+D.1      Back-of-the-Envelope Estimate for the Max Securable Value.
+Consider five cloud TEE providers and a (3, 5) threshold scheme. Suppose a TEE breach is independently
+detected with baseline probability p = 0.005, and collusion amplifies detection via γ = 2. Then for a
+conspiratorial set S of size |S| = 3,
+                                               γ                           2
+                     pS = 1 − (1 − p) |S|          = 1 − (1 − 0.005)3 = 1 − 0.995 9 ≈ 0.0441.
+   To deter expropriation, the (shared) reward for collusion must be less than the cost of being caught scaled
+by its probability:
+                                         ω
+                            (1 − 0.0441)   ≤ 0.0441 C =⇒ ω ≤ 0.138 C .
+                                         3
+
+Estimating C Since TEEs services essentially sell confidentiality, an extractive jailbreak would likely incur
+significant revenue loss for this service. For simplicity, we assume that a detected breach implies a full loss of
+discounted future cash flows to the TEE service line. One can also suppose further costs from legal sanction
+and reputational spillover to other provided services combine to make is a passable estimate.
+    Using available information we now make a plausible estimate for the N P V of TEE services. The future
+market size for TEE-based cloud computing services is estimated at $15+ billion in annual revenues.[Grand View Research,
+2024] With a benchmark profit margin of 25% and a discount rate of 10%, we can treat this as a perpetual
+stream, resulting in a roughly estimated present discounted value of
+
+                                                       (15 bn) × 0.25
+                                           NPV =                      = 37.5 bn.
+                                                            0.10
+Averaging the cost over our (assumed) 5 participants, gives a (∼20% share), resulting in C ≈ 7.5bn. This
+gives a maximum secret value of:
+                                           ω Secure ≈ 1.03bn
+   This suggests that, under our somewhat ad hoc assumptions, the extractable value than could be secured
+against a one-time breach could not exceed about a billion dollars.
+
+
+
+References
+Philippe Aghion and Peter Howitt. Innovation and growth: an overview. Growth and Development: Theories
+  and Facts, pages 71–87, 1992.
+Philippe Aghion and Jean Tirole. Formal and real authority in organizations. Journal of political economy,
+  105(1):1–29, 1997.
+James J Anton and Dennis A Yao. Expropriation and inventions: Appropriable rents in the absence of
+  property rights. The American Economic Review, pages 190–209, 1994.
+James J Anton and Dennis A Yao. The sale of ideas: Strategic disclosure, property rights, and contracting.
+  The Review of Economic Studies, 69(3):513–531, 2002.
+ARM.     Arm security technology:   Building a                          secure    system     using     trustzone     technology.
+ https://developer.arm.com/documentation, 2020.
+  12 One might say this is “perfect collusion” in that the conspirators do not increase each other’s detection probability; each is
+
+just as likely to be caught as if acting alone.
+
+
+                                                                19
+Kenneth Joseph Arrow. Economic welfare and the allocation of resources for invention. Springer, 1972.
+K.J. Arrow. Essays in the Theory of Risk-bearing. Markham economics series. Markham Publishing Com-
+  pany, 1971. ISBN 9780841020016. URL https://books.google.com/books?id=KkMoAQAAMAAJ.
+Jim Bennett. The travels and trials of mr harrison’s timekeeper. In Instruments, Travel and Science, pages
+  75–95. Routledge, 2003.
+B Douglas Bernheim and Michael D Whinston. Sequential bargaining under asymmetric information. Journal
+  of Economic Theory, 48(1):5–39, 1987.
+Agostino Capponi, Ruizhe Jia, and Ye Wang. The adoption of blockchain-based decentralized exchanges.
+ Management Science, 2023.
+Lauren Cohen, Umit G Gurun, and Scott Duke Kominers. Patent trolls: Evidence from targeted firms.
+  Management Science, 65(12):5461–5486, 2019.
+Andrea Contigiani and David H Hsu. How trade secrets hurt innovation. Harvard Business Review, 29, 2019.
+Victor Costan and Srinivas Devadas. Intel sgx explained. Cryptology ePrint Archive, Report 2016/086,
+  2016. https://eprint.iacr.org/2016/086.
+Vincent P Crawford and Joel Sobel. Strategic information transmission. Econometrica, pages 1431–1451,
+  1982.
+Philip Daian, Steven Goldfeder, Tyler Kell, Yunqi Li, Xueyuan Zhao, Iddo Bentov, Lorenz Breidenbach,
+  and Ari Juels. Flash boys 2.0: Frontrunning in decentralized exchanges, miner extractable value, and
+  consensus instability. IEEE Symposium on Security and Privacy, pages 910–927, 2020.
+Gary Dushnitsky and J Myles Shaver. Limitations to interorganizational knowledge acquisition: The paradox
+ of corporate venture capital. Strategic Management Journal, 30(10):1045–1064, 2009.
+Lee Fleming. Recombinant uncertainty in technological search. Management science, 47(1):117–132, 2001.
+Paul Graham. How to start a startup. https://www.paulgraham.com/start.html, March 2005. [Blog
+  post].
+Grand View Research.         Confidential computing market size & share analysis report, 2030.
+  https://www.grandviewresearch.com/industry-analysis/confidential-computing-market-report,
+  2024. Accessed: 2025-01-18.
+Sanford J Grossman and Oliver D Hart. The costs and benefits of ownership: A theory of vertical and lateral
+  integration. Journal of Political Economy, 94(4):691–719, 1986.
+Oliver Hart and John Moore. Incomplete contracts and renegotiation. Econometrica, pages 755–785, 1988.
+Lewis    &     Bockius LLP   Morgan.        Should   venture  capital  firms  sign   ndas?
+  https://www.morganlewis.com/-/media/files/special-topics/vcpefdeskbook/fundoperation/cpefdeskbook_shou
+  2015. [Legal memo].
+Richard R Nelson. The simple economics of basic scientific research. Journal of political economy, 67(3):
+  297–306, 1959.
+Masahiro Okuno-Fujiwara. Management of the innovation process: An overview of japanese firms. Research
+ Policy, 20(2):165–172, 1991.
+Tim Roughgarden. Transaction fee mechanism design for the ethereum blockchain: An economic analysis of
+  eip-1559. arXiv preprint arXiv:2012.00854, 2020.
+Ariel Rubinstein. Finite automata play the repeated prisoner’s dilemma. Journal of economic theory, 39(1):
+  83–96, 1986.
+
+
+                                                    20
+Suzanne Scotchmer. On the optimality of the patent renewal system. The RAND Journal of Economics,
+  pages 181–196, 1999.
+Dava Sobel. Longitude: The true story of a lone genius who solved the greatest scientific problem of his time.
+ Macmillan, 2005.
+
+
+
+
+                                                     21
+

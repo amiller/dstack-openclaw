@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <!-- Begin Jekyll SEO tag v2.8.0 -->
+<title>Private inference | Confer Blog</title>
+<meta name="generator" content="Jekyll v4.3.4" />
+<meta property="og:title" content="Private inference" />
+<meta name="author" content="Moxie Marlinspike" />
+<meta property="og:locale" content="en_US" />
+<meta name="description" content="When you use an AI service, you’re handing over your thoughts in plaintext. The operator stores them, trains on them, and–inevitably–will monetize them. You get a response; they get everything." />
+<meta property="og:description" content="When you use an AI service, you’re handing over your thoughts in plaintext. The operator stores them, trains on them, and–inevitably–will monetize them. You get a response; they get everything." />
+<link rel="canonical" href="https://confer.to/blog/2026/01/private-inference/" />
+<meta property="og:url" content="https://confer.to/blog/2026/01/private-inference/" />
+<meta property="og:site_name" content="Confer Blog" />
+<meta property="og:image" content="https://confer.to/blog/assets/images/og-image.png" />
+<meta property="og:type" content="article" />
+<meta property="article:published_time" content="2026-01-05T00:00:00-08:00" />
+<meta name="twitter:card" content="summary_large_image" />
+<meta property="twitter:image" content="https://confer.to/blog/assets/images/og-image.png" />
+<meta property="twitter:title" content="Private inference" />
+<meta name="twitter:site" content="@moxie" />
+<meta name="twitter:creator" content="@Moxie Marlinspike" />
+<script type="application/ld+json">
+{"@context":"https://schema.org","@type":"BlogPosting","author":{"@type":"Person","name":"Moxie Marlinspike"},"dateModified":"2026-01-05T00:00:00-08:00","datePublished":"2026-01-05T00:00:00-08:00","description":"When you use an AI service, you’re handing over your thoughts in plaintext. The operator stores them, trains on them, and–inevitably–will monetize them. You get a response; they get everything.","headline":"Private inference","image":"https://confer.to/blog/assets/images/og-image.png","mainEntityOfPage":{"@type":"WebPage","@id":"https://confer.to/blog/2026/01/private-inference/"},"url":"https://confer.to/blog/2026/01/private-inference/"}</script>
+<!-- End Jekyll SEO tag -->
+
+  <link type="application/atom+xml" rel="alternate" href="https://confer.to/blog/feed.xml" title="Confer Blog" />
+  <link rel="stylesheet" href="/blog/assets/css/style.css">
+</head>
+<body class="page-post">
+  <header class="site-header">
+    <nav>
+      <a href="/blog/" class="site-title">
+        <svg class="site-logo" width="24" height="24" viewBox="0 0 32 32" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="16" cy="16" r="14" fill="none" stroke="currentColor" stroke-width="2.5"/>
+        </svg>
+        Confer Blog
+      </a>
+      <a href="https://confer.to" class="back-link">Try Confer</a>
+    </nav>
+  </header>
+
+  <main>
+    <article class="post">
+  
+  <img class="author-avatar" src="https://avatars.githubusercontent.com/moxie0" alt="Moxie Marlinspike" onerror="this.style.display='none'">
+  
+  <header class="post-header">
+    <h1 class="post-title">Private inference</h1>
+    <div class="post-date">
+      <a href="https://github.com/moxie0">Moxie Marlinspike</a> on 05 Jan 2026
+    </div>
+  </header>
+
+  <div class="post-content">
+    <p>When you use an AI service, you’re handing over your thoughts in plaintext. The operator stores them, trains on them, and–inevitably–will monetize them. You get a response; they get everything.</p>
+
+<p>Confer works differently. In the <a href="/blog/2025/12/passkey-encryption/">previous post</a>, we described how Confer encrypts your chat history with keys that never leave your devices. The remaining piece to consider is inference—the moment your prompt reaches an LLM and a response comes back.</p>
+
+<p>Traditionally, end-to-end encryption works when the endpoints are devices under the control of a conversation’s participants. However, AI inference requires a server with GPUs to be an endpoint in the conversation. Someone has to run that server, but we want to prevent the people who are running it (us) from seeing prompts or the responses.</p>
+
+<h2 id="confidential-computing">Confidential computing</h2>
+
+<p>This is the domain of confidential computing. Confidential computing uses hardware-enforced isolation to run code in a Trusted Execution Environment (TEE). The host machine provides CPU, memory, and power, but cannot access the TEE’s memory or execution state.</p>
+
+<p>LLMs are fundamentally stateless—input in, output out—which makes them ideal for this environment. For Confer, we run inference inside a confidential VM. Your prompts are encrypted from your device directly into the TEE using <a href="https://noiseprotocol.org/noise.html">Noise Pipes</a>, processed there, and responses are encrypted back. The host never sees plaintext.</p>
+
+<p>But this raises an obvious concern: even if we have encrypted pipes in and out of an encrypted environment, it really matters <em>what</em> is running inside that environment. The client needs assurance that the code running is actually doing what it claims.</p>
+
+<h2 id="attestation">Attestation</h2>
+
+<p>Confidential computing solves this with <em>remote attestation</em>. When a confidential VM boots, the hardware generates a signed quote—a cryptographic statement containing hashes of the kernel, initrd, and command line. These hashes are called measurements, and they uniquely identify the code running inside the TEE.</p>
+
+<p>For Confer, we extend the measurement to cover the entire root filesystem using <a href="https://docs.kernel.org/admin-guide/device-mapper/verity.html">dm-verity</a>. This builds a merkle tree over every byte of the filesystem and embeds the merkle root hash in the kernel command line. Since the command line is measured, any change to any file changes the attestation. The measurement now covers everything.</p>
+
+<p>But a measurement is just a hash. To verify it, someone needs to be able to reproduce it.</p>
+
+<h2 id="making-the-attestation-verifiable">Making the attestation verifiable</h2>
+
+<p>The Confer <a href="https://github.com/conferlabs/confer-proxy">proxy</a> and <a href="https://github.com/conferlabs/confer-image">image</a> are built with nix and mkosi to produce bit-for-bit reproducible outputs. Anyone can clone the repository, run the build, and get the exact same measurements.</p>
+
+<p>Each release is also signed and published to a transparency log that is <a href="https://search.sigstore.dev/?email=releases%40conferlabs.iam.gserviceaccount.com">easily searchable</a>. The log is append-only and publicly auditable, which means we can’t quietly publish a different build for different users.</p>
+
+<p>Now we have an intuition for how these parts can come together.</p>
+
+<h2 id="the-connection">The connection</h2>
+
+<p>When you open Confer and start a conversation, your client initiates a Noise handshake with the inference endpoint. The TEE responds with its attestation quote embedded in the noise handshake.</p>
+
+<p>Your client verifies the quote’s signature, confirming it came from genuine TEE hardware. It checks that the public key in the quote matches the one used in the handshake–this binds the encrypted channel to the TEE, preventing interception or replay by anything outside it. It extracts the measurements and confirms they match a release in the transparency log.</p>
+
+<p>Once verification succeeds, the handshake completes. Your client now has cryptographic assurance that it’s talking directly to verified code running in hardware-enforced isolation.</p>
+
+<p>All traffic to the inference endpoint is then encrypted with ephemeral session keys that provide forward secrecy: even if a long-term key were later compromised, past conversations remain protected because the ephemeral keys no longer exist.</p>
+
+<h2 id="a-different-model">A different model</h2>
+
+<p>Confer combines confidential computing with <a href="/blog/2025/12/passkey-encryption/">passkey-derived encryption</a> to ensure your data remains private.</p>
+
+<p>This is different from traditional AI services, where your prompts are transmitted in plaintext to an operator who stores them in plaintext (where they are vulnerable to hackers, employees, subpoenas), mines them for behavioral data, and trains on them.</p>
+
+<p>We think Confer is how AI should work.</p>
+
+  </div>
+
+  <div class="post-share">
+    <span class="share-label">Share</span>
+    <div class="share-buttons">
+      <a href="https://twitter.com/intent/tweet?text=Private+inference&url=https%3A%2F%2Fconfer.to%2Fblog%2F2026%2F01%2Fprivate-inference%2F" target="_blank" rel="noopener" class="share-button" aria-label="Share on X">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-5.214-6.817L4.99 21.75H1.68l7.73-8.835L1.254 2.25H8.08l4.713 6.231zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+      </a>
+      <a href="https://www.linkedin.com/sharing/share-offsite/?url=https%3A%2F%2Fconfer.to%2Fblog%2F2026%2F01%2Fprivate-inference%2F" target="_blank" rel="noopener" class="share-button" aria-label="Share on LinkedIn">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433c-1.144 0-2.063-.926-2.063-2.065 0-1.138.92-2.063 2.063-2.063 1.14 0 2.064.925 2.064 2.063 0 1.139-.925 2.065-2.064 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+      </a>
+      <a href="https://www.facebook.com/sharer/sharer.php?u=https%3A%2F%2Fconfer.to%2Fblog%2F2026%2F01%2Fprivate-inference%2F" target="_blank" rel="noopener" class="share-button" aria-label="Share on Facebook">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+      </a>
+    </div>
+  </div>
+
+  <div class="post-cta">
+    <p>Don't have Confer? <a href="https://confer.to">Give it a try!</a></p>
+  </div>
+</article>
+
+  </main>
+
+  <footer class="site-footer">
+    <div class="container">
+      <p>&copy; 2026 Confer. All rights reserved.</p>
+      <a href="/blog/feed.xml" class="rss-link" title="RSS Feed">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="6.18" cy="17.82" r="2.18"/>
+          <path d="M4 4.44v2.83c7.03 0 12.73 5.7 12.73 12.73h2.83c0-8.59-6.97-15.56-15.56-15.56zm0 5.66v2.83c3.9 0 7.07 3.17 7.07 7.07h2.83c0-5.47-4.43-9.9-9.9-9.9z"/>
+        </svg>
+        RSS
+      </a>
+    </div>
+  </footer>
+</body>
+</html>
