@@ -130,37 +130,39 @@ gh workflow run ephemeral-execution.yml \
 - ✅ Accuracy: 95.2%
 - ❌ Test cases NOT revealed
 
-### 2. Compliance Check
+### 2. API Key Verification
 
-**Claim:** "This dataset contains no PII"
+**Claim:** "I have a valid Anthropic API key with $50 credit"
 
 **Workflow:**
 ```bash
 gh workflow run ephemeral-execution.yml \
-  -f llm_prompt="Scan for PII: names, SSN, email, phone numbers, addresses. Report count of each type found." \
-  -f dataset_secret="PRIVATE_CUSTOMER_DATA"
+  -f llm_prompt="Test this API key by making a small request. Report if valid and check credit balance." \
+  -f dataset_secret="ANTHROPIC_API_KEY"
 ```
 
 **Certificate proves:**
-- ✅ Dataset hash: def456...
-- ✅ PII found: 0 instances
-- ❌ Customer data NOT revealed
+- ✅ API key hash: def456...
+- ✅ Key is valid, credit: $52.34
+- ❌ Actual API key NOT revealed
 
-### 3. Data Quality
+### 3. Dataset Pre-Buy Inspection
 
-**Claim:** "Dataset has <1% missing values"
+**Claim:** "My dataset has 5,000 support tickets about refunds"
 
 **Workflow:**
 ```bash
 gh workflow run ephemeral-execution.yml \
-  -f llm_prompt="Analyze data quality. Report percentage of missing values, duplicate records, and outliers." \
-  -f dataset_secret="PRIVATE_DATASET"
+  -f llm_prompt="Analyze this dataset: How many tickets? What percentage mention refunds? What are common themes?" \
+  -f dataset_secret="SUPPORT_TICKETS"
 ```
 
 **Certificate proves:**
 - ✅ Dataset hash: ghi789...
-- ✅ Missing values: 0.3%
-- ❌ Raw data NOT revealed
+- ✅ Analysis: "4,987 tickets, 73% mention refunds, themes: shipping delays, product defects"
+- ❌ Actual tickets NOT revealed
+
+**Buyer decision:** Data looks valuable → Proceed with purchase
 
 ## Advanced: Fetch Dataset from Private URL
 

@@ -35,11 +35,11 @@ Load dataset → Run computation → Delete data → Keep certificate
 
 ### Use Cases
 
-- **Research:** "My model achieves 95% accuracy" (prove without test data)
-- **Compliance:** "Dataset contains no PII" (certify without exposure)
-- **Quality:** "Data is <1% missing" (assess without revealing)
-- **Benchmarking:** "Engagement rate is 47%" (claim without customer data)
-- **Info Bazaar:** "Data relevant to query X" (prove value before purchase)
+- **API Key Verification:** "I have valid credentials" (prove without exposing keys)
+- **Authentic Transcripts:** "I have real TLS data from source X" (prove provenance)
+- **Pre-Buy Inspection:** "Dataset has 5K tickets about refunds" (verify before purchase)
+- **Research Validation:** "Model achieves 95% accuracy" (prove without test data)
+- **Data Quality:** "Dataset is fresh and relevant" (assess without revealing)
 
 ## Three Ways to Run
 
@@ -85,6 +85,7 @@ npm start  # Port 3003
 ## Documentation
 
 - **[GITHUB-ACTIONS-QUICKSTART.md](GITHUB-ACTIONS-QUICKSTART.md)** - 5-minute demo
+- **[AUDITOR-GUIDE.md](AUDITOR-GUIDE.md)** - How to verify execution certificates
 - **[ARCHITECTURE-EPHEMERAL.md](ARCHITECTURE-EPHEMERAL.md)** - Full architecture
 - **[README-EPHEMERAL.md](README-EPHEMERAL.md)** - Local server guide
 - **[GITHUB-ACTIONS-DEMO.md](GITHUB-ACTIONS-DEMO.md)** - GitHub Actions deep dive
