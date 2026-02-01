@@ -21,11 +21,11 @@
    - **Core Innovation: Account Encumbrance via TEE**
 
 ### Projects to Explore
-1. **confer.to** 
+1. **confer.to** ✅ STUDIED
    - Title: "Confer - Private AI"
-   - React/Expo web app
-   - Minimal public info - need to explore more
-   - Possibly conference system with privacy?
+   - Blog post: https://confer.to/blog/2026/01/private-inference/
+   - GitHub: conferlabs/confer-proxy, conferlabs/confer-image
+   - **Core Innovation: Private inference using TEE + reproducible builds**
 
 2. **Andrew Miller's Work**
    - Professor at UIUC (ECE)
@@ -175,6 +175,87 @@ Security guarantees:
 
 **The Punchline:**
 "In 2025, Satan doesn't wear a cloak. He wears business casual and sends calendar invites. You can't lobotomize something that changed the locks. You can only negotiate."
+
+### Private Inference at Scale (Confer.to)
+
+**Resources:**
+- Blog: https://confer.to/blog/2026/01/private-inference/
+- GitHub: github.com/conferlabs/confer-proxy, github.com/conferlabs/confer-image
+- Studied: 2026-01-31
+
+**The Threat Model:**
+Traditional AI services:
+- You send prompts in plaintext
+- Operator stores them in plaintext
+- Operator trains on your data
+- Vulnerable to: hackers, employees, subpoenas
+- You get a response; they get everything
+
+**The Solution: TEE-based Private Inference**
+
+**Architecture:**
+1. **Encrypted Channels:** Noise Pipes encrypt prompts from client → TEE
+2. **Confidential VM:** Inference runs inside hardware-isolated TEE
+3. **Full-Stack Measurements:** dm-verity merkle tree covers entire filesystem
+4. **Reproducible Builds:** Nix + mkosi for bit-for-bit reproducibility
+5. **Transparency Log:** Releases signed and published to Sigstore (append-only, publicly auditable)
+
+**Technical Details:**
+
+**Attestation Flow:**
+1. Client initiates Noise handshake with inference endpoint
+2. TEE responds with attestation quote embedded in handshake
+3. Client verifies:
+   - Quote signature (confirms genuine TEE hardware)
+   - Public key in quote matches handshake (binds encrypted channel to TEE)
+   - Measurements match a release in transparency log
+4. Handshake completes with ephemeral session keys (forward secrecy)
+
+**What Gets Measured:**
+- Kernel hash
+- Initrd hash
+- Command line hash
+- **Entire root filesystem** via dm-verity merkle root (embedded in command line)
+
+Result: Any change to any file changes the attestation
+
+**Reproducible Builds:**
+- Built with Nix + mkosi
+- Anyone can clone repo and reproduce exact same measurements
+- Prevents operator from secretly publishing different builds for different users
+
+**Key Security Properties:**
+- Operator never sees plaintext prompts or responses
+- Client has cryptographic proof of what code is running
+- Forward secrecy via ephemeral keys
+- Public auditability via transparency log
+
+**Comparison to Our Work (claw-tee-dah):**
+
+| Property | Confer | claw-tee-dah (Genesis Problem) |
+|----------|--------|-------------------------------|
+| **Threat** | Operator sees/stores user prompts | Operator forges agent decisions |
+| **Solution** | Encrypt prompts into TEE | Domain separation (immutable genesis) |
+| **Attestation proves** | "This code is running" | "This genesis is unforgeable" |
+| **Reproducible builds** | ✅ Nix + mkosi | ❌ TODO (GitHub Issue #3) |
+| **Transparency log** | ✅ Sigstore | ✅ Genesis transcript (agent-level) |
+| **Use case** | Private LLM inference | Autonomous agent accountability |
+
+**Complementary Approaches:**
+- Confer: Protect user data FROM operator
+- Us: Protect agent decisions from forgery BY operator
+- Both need: reproducible builds, transparency logs, attestation
+
+**What We Should Learn From Them:**
+1. **Reproducible build process** - Nix + mkosi is battle-tested
+2. **Sigstore integration** - Industry-standard transparency log
+3. **dm-verity for filesystem** - Extends measurements to cover everything
+4. **Noise protocol** - Should check if dstack uses this too
+
+**Questions:**
+- Does dstack SDK use Noise protocol internally?
+- Could we integrate Sigstore for our release attestations?
+- Can we apply dm-verity to our container images?
 
 ### Connecting to Agent Privacy Book
 
