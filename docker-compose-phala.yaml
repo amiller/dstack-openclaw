@@ -1,0 +1,70 @@
+# docker-compose-phala.yaml
+# Production deployment for Phala Cloud - Genesis Transparency Architecture
+#
+# Trust Model:
+# - dstack-proxy: TRUSTED boundary, has dstack.sock, logs all dev instructions
+# - claw-tee-dah: CONSTRAINED, no dstack.sock, receives instructions via proxy
+#
+# Attestation proves:
+# - All dev instructions are in genesis log (no secret commands)
+# - Agent built workspace without ex-parte communication
+#
+# Encrypted env vars (in Phala):
+# - ANTHROPIC_API_KEY: Agent's API access
+# - DEV_KEY: Required to send instructions (proves who sent them)
+
+services:
+  # dstack-proxy: Genesis transparency gateway
+  # - Exposes port 3000 (chat UI + API)
+  # - Logs all instructions to genesis-log BEFORE forwarding
+  # - Has direct dstack.sock access for attestation
+  dstack-proxy:
+    image: ghcr.io/amiller/dstack-proxy@sha256:ccc75f92545ce8beffa8a8131a934d6f831a2db50b1b5699ba9ff220469c7eb9
+    container_name: dstack-proxy
+    ports:
+      - "3000:3000"  # Public chat endpoint
+    environment:
+      - DEV_KEY=${DEV_KEY}
+      - AGENT_HOST=claw-tee-dah
+      - AGENT_PORT=3001
+    volumes:
+      # Real dstack.sock (mounted by Phala Cloud)
+      - /var/run/dstack.sock:/var/run/dstack.sock:ro
+      # Genesis log (shared with agent for initial write, then read-only here)
+      - genesis-log:/var/log-genesis
+      # Proxy socket (for agent's dstack requests)
+      - proxy-socket:/var/run-proxy
+    networks:
+      - tee-network
+    restart: unless-stopped
+    depends_on:
+      - claw-tee-dah
+
+  # claw-tee-dah: The constrained agent
+  # - NO external ports (proxy handles public access)
+  # - NO direct dstack.sock (uses proxy socket)
+  # - Runs internal chat server on 3001
+  claw-tee-dah:
+    image: ghcr.io/amiller/openclaw-dstack@sha256:2b995068365587813ccf20d6b1b649ea3926579a3512fc5bb4fb5b305437309b
+    container_name: claw-tee-dah
+    # NO external ports - proxy handles all external access
+    environment:
+      - ANTHROPIC_API_KEY=${ANTHROPIC_API_KEY}
+      - CHAT_PORT=3001
+      - AGENT_NAME=claw-tee-dah
+    volumes:
+      # NO direct dstack.sock access! Uses proxy socket instead.
+      - proxy-socket:/var/run:rw
+      # Genesis log - writes at startup, then proxy logs instructions here
+      - genesis-log:/var/log-genesis:rw
+    networks:
+      - tee-network
+    restart: unless-stopped
+
+networks:
+  tee-network:
+    driver: bridge
+
+volumes:
+  genesis-log:
+  proxy-socket:

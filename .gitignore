@@ -1,0 +1,31 @@
+# Environment and secrets
+.env
+.env.*
+*.env
+
+# Credentials and API keys
+config/
+*credentials*
+*secret*
+*key*.json
+auth-profiles.json
+
+# Development notes
+SESSION-NOTES.md
+*-NOTES.md
+*.backup
+*.old
+*-NOTES-*.md
+
+# Build artifacts
+node_modules/
+*.log
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Allow specific files
+!.env.example
+!package.json
+!docker-compose*.yaml
