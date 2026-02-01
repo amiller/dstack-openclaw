@@ -1,10 +1,26 @@
-# Data Collaboration Market - MVP
+# Data Collaboration Market + LLM Claims Service
 
-**Status:** Building live prototype while gathering feedback on Moltbook!
+**Status:** ✨ NEW FEATURE - LLM Claims! Make verifiable claims about private datasets.
 
 ## The Vision
 
-Agents collaborate on data analysis without revealing raw data, using TEE as a trusted mediator.
+**Info Bazaar Primitive:** Enable agents to make cryptographically verifiable claims about private datasets using LLM analysis in TEE. Anyone can verify claims WITHOUT seeing raw data.
+
+### What's New: LLM Claims Service
+
+Make claims like:
+- "My dataset has 60% positive sentiment" → Verifiable proof
+- "This data contains no PII" → Compliance certification  
+- "My model achieves 95% accuracy" → Performance proof
+- "I have data relevant to query X" → Data marketplace primitive
+
+**How it works:**
+1. Upload private dataset → Encrypted in TEE
+2. Submit LLM prompt (public) + API key
+3. TEE runs analysis → Generates signed claim
+4. Share claim URL → Anyone verifies WITHOUT seeing data
+
+👉 **[Quick Start Guide](examples/QUICKSTART.md)**
 
 ## MVP Scope (This Weekend)
 

@@ -1,0 +1,637 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DI + Astrometry: The Inclination-Mass Degeneracy</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        h1 { text-align: center; margin-bottom: 8px; font-size: 1.6em; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 20px; font-size: 0.9em; }
+        .container { max-width: 1400px; margin: 0 auto; }
+        .main-layout { display: grid; grid-template-columns: 260px 1fr; gap: 20px; }
+        .sidebar { display: flex; flex-direction: column; gap: 12px; }
+        .panel {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 14px;
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+        .panel h3 {
+            margin-bottom: 10px;
+            color: #64b5f6;
+            font-size: 0.95em;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 6px;
+        }
+        .visuals-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr 1fr;
+            gap: 12px;
+        }
+        canvas { display: block; margin: 0 auto; border-radius: 6px; background: #0d1117; }
+        .control-group { margin-bottom: 12px; }
+        .control-group label { display: block; margin-bottom: 6px; font-size: 0.82em; color: #aaa; }
+        .control-group input[type="range"] {
+            width: 100%; height: 5px; border-radius: 3px;
+            background: #333; outline: none; -webkit-appearance: none;
+        }
+        .control-group input[type="range"]::-webkit-slider-thumb {
+            -webkit-appearance: none; width: 16px; height: 16px;
+            border-radius: 50%; background: #64b5f6; cursor: pointer;
+        }
+        .value-display { text-align: right; font-size: 0.78em; color: #64b5f6; margin-top: 3px; }
+        .toggle-row { display: flex; align-items: center; gap: 10px; margin: 10px 0; }
+        .toggle {
+            width: 44px; height: 24px; background: #333; border-radius: 12px;
+            position: relative; cursor: pointer; transition: background 0.2s;
+        }
+        .toggle.active { background: #4ecdc4; }
+        .toggle::after {
+            content: ''; position: absolute; width: 18px; height: 18px;
+            background: #fff; border-radius: 50%; top: 3px; left: 3px; transition: left 0.2s;
+        }
+        .toggle.active::after { left: 23px; }
+        .toggle-label { font-size: 0.82em; color: #aaa; }
+        .info-box {
+            background: rgba(100,181,246,0.1);
+            border: 1px solid rgba(100,181,246,0.3);
+            border-radius: 6px; padding: 10px; font-size: 0.78em; line-height: 1.4;
+        }
+        .highlight { color: #4ecdc4; font-weight: bold; }
+        .warning { color: #f39c12; }
+        .play-controls { display: flex; gap: 6px; flex-wrap: wrap; }
+        button {
+            background: #64b5f6; border: none; color: #1a1a2e;
+            padding: 7px 14px; border-radius: 5px; cursor: pointer;
+            font-weight: bold; font-size: 0.8em; transition: background 0.2s;
+        }
+        button:hover { background: #90caf9; }
+        button.secondary { background: rgba(255,255,255,0.1); color: #eee; }
+        button.secondary:hover { background: rgba(255,255,255,0.2); }
+        .metric {
+            display: flex; justify-content: space-between;
+            padding: 4px 0; border-bottom: 1px solid rgba(255,255,255,0.05);
+            font-size: 0.8em;
+        }
+        .metric-label { color: #888; }
+        .metric-value { color: #fff; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Why Direct Imaging + Astrometry break the mass degeneracy</h1>
+        <div class="subtitle">Same sky projection, different true orbits → different stellar wobble</div>
+
+        <div class="main-layout">
+            <div class="sidebar">
+                <div class="panel">
+                    <h3>Orbital Parameters</h3>
+                    <div class="control-group">
+                        <label>Inclination i</label>
+                        <input type="range" id="inclination" min="5" max="89" value="60" step="1">
+                        <div class="value-display"><span id="incValue">60</span>° <span style="color:#666">(0°=face-on, 90°=edge-on)</span></div>
+                    </div>
+                    <div class="control-group">
+                        <label>Semi-major axis a</label>
+                        <input type="range" id="sma" min="0.5" max="3" value="1.0" step="0.05">
+                        <div class="value-display"><span id="smaValue">1.00</span> AU</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Eccentricity e</label>
+                        <input type="range" id="ecc" min="0" max="0.8" value="0.3" step="0.05">
+                        <div class="value-display"><span id="eccValue">0.30</span></div>
+                    </div>
+                    <div class="control-group">
+                        <label>Arg. of periastron ω</label>
+                        <input type="range" id="argperi" min="0" max="360" value="45" step="5">
+                        <div class="value-display"><span id="argperiValue">45</span>°</div>
+                    </div>
+                    <div class="control-group">
+                        <label>Planet Mass M<sub>p</sub></label>
+                        <input type="range" id="pmass" min="1" max="50" value="10" step="1">
+                        <div class="value-display"><span id="pmassValue">10</span> M<sub>⊕</sub></div>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Degeneracy Mode</h3>
+                    <div class="toggle-row">
+                        <div class="toggle" id="degeneracyToggle"></div>
+                        <span class="toggle-label">Lock sky projection</span>
+                    </div>
+                    <div class="info-box" id="degeneracyInfo">
+                        <b>OFF:</b> Changing i changes the sky projection.<br><br>
+                        <b>ON:</b> Adjusts a to keep the projected semi-major axis constant. Same DI observable, but different true orbit → different astrometry!
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Playback</h3>
+                    <div class="play-controls">
+                        <button id="playPause">▶ Play</button>
+                        <button id="reset" class="secondary">Reset</button>
+                    </div>
+                </div>
+
+                <div class="panel">
+                    <h3>Observables</h3>
+                    <div class="metric">
+                        <span class="metric-label">Projected semi-major (DI sees):</span>
+                        <span class="metric-value" id="projSma">--</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">True semi-major axis:</span>
+                        <span class="metric-value" id="trueSma">--</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Wobble amplitude:</span>
+                        <span class="metric-value highlight" id="wobbleAmp">--</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Inferred M<sub>p</sub> (if a known):</span>
+                        <span class="metric-value" id="inferredMass">--</span>
+                    </div>
+                    <div class="metric">
+                        <span class="metric-label">Inferred M<sub>p</sub> (a from DI only):</span>
+                        <span class="metric-value warning" id="inferredMassDegen">--</span>
+                    </div>
+                </div>
+            </div>
+
+            <div class="visuals-grid">
+                <div class="panel">
+                    <h3>3D True Orbit</h3>
+                    <canvas id="orbit3d" width="340" height="340"></canvas>
+                </div>
+                <div class="panel">
+                    <h3>Sky Projection (DI Observable)</h3>
+                    <canvas id="skyProj" width="340" height="340"></canvas>
+                </div>
+                <div class="panel">
+                    <h3>Stellar Wobble (Astrometry)</h3>
+                    <canvas id="wobble" width="340" height="340"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+    const config = {
+        starMass: 1.0,  // Solar masses
+        distance: 10,   // parsecs
+        muasPerAU: 100, // at 10 pc, 1 AU = 100 mas
+        fps: 60,
+        animSpeed: 0.08
+    };
+
+    let state = {
+        time: 0,
+        playing: false,
+        animationId: null,
+        lastTimestamp: 0,
+        inclination: 60,
+        sma: 1.0,
+        ecc: 0.3,
+        argperi: 45,
+        pmass: 10,
+        degeneracyMode: false,
+        lockedProjSma: null
+    };
+
+    const orbit3dCanvas = document.getElementById('orbit3d');
+    const skyProjCanvas = document.getElementById('skyProj');
+    const wobbleCanvas = document.getElementById('wobble');
+    const ctx3d = orbit3dCanvas.getContext('2d');
+    const ctxSky = skyProjCanvas.getContext('2d');
+    const ctxWobble = wobbleCanvas.getContext('2d');
+
+    // Orbital mechanics
+    function solveKepler(M, e, tol=1e-8) {
+        let E = M;
+        for (let i = 0; i < 50; i++) {
+            const dE = (E - e * Math.sin(E) - M) / (1 - e * Math.cos(E));
+            E -= dE;
+            if (Math.abs(dE) < tol) break;
+        }
+        return E;
+    }
+
+    function trueAnomaly(E, e) {
+        return 2 * Math.atan2(Math.sqrt(1+e) * Math.sin(E/2), Math.sqrt(1-e) * Math.cos(E/2));
+    }
+
+    function orbitPosition(nu, a, e) {
+        const r = a * (1 - e*e) / (1 + e * Math.cos(nu));
+        return { x: r * Math.cos(nu), y: r * Math.sin(nu), r };
+    }
+
+    // 3D rotation: orbital plane to sky plane
+    // i = inclination, omega = arg of periastron, Omega = 0 for simplicity
+    function toSkyFrame(x_orb, y_orb, i_rad, omega_rad) {
+        // First rotate by omega in orbital plane
+        const x1 = x_orb * Math.cos(omega_rad) - y_orb * Math.sin(omega_rad);
+        const y1 = x_orb * Math.sin(omega_rad) + y_orb * Math.cos(omega_rad);
+        // Then incline: y1 stays, x1 projects, z comes from y1
+        const X = x1;
+        const Y = y1 * Math.cos(i_rad);
+        const Z = y1 * Math.sin(i_rad);  // toward observer
+        return { X, Y, Z };
+    }
+
+    // Projected semi-major axis (what DI measures, simplified)
+    function projectedSma(a, i_rad, e, omega_rad) {
+        // Approximate: project the orbit ellipse
+        // More accurate: use Thiele-Innes, but this captures the key effect
+        // The apparent size scales roughly as a * sqrt((1 + cos²i)/2) for circular
+        // For elliptical, it's more complex, but key is a * f(i)
+        const cosi = Math.cos(i_rad);
+        // Simplified projected semi-major: a * sqrt(cos²i + sin²i * cos²omega) ish
+        // Actually let's compute the projected ellipse properly
+        // The projected semi-major axis of the apparent ellipse
+        const A = a * (Math.cos(omega_rad)**2 + Math.sin(omega_rad)**2 * cosi**2)**0.5;
+        const B = a * (Math.sin(omega_rad)**2 + Math.cos(omega_rad)**2 * cosi**2)**0.5;
+        return Math.max(A, B) * (1 - e*e)**0.5;  // rough
+    }
+
+    // Given desired projected sma, solve for true a
+    function smaForProjection(projSma, i_rad, e, omega_rad) {
+        const cosi = Math.cos(i_rad);
+        const A = (Math.cos(omega_rad)**2 + Math.sin(omega_rad)**2 * cosi**2)**0.5;
+        const B = (Math.sin(omega_rad)**2 + Math.cos(omega_rad)**2 * cosi**2)**0.5;
+        const factor = Math.max(A, B) * (1 - e*e)**0.5;
+        return projSma / factor;
+    }
+
+    function computeOrbitPoints(a, e, i_rad, omega_rad, nPoints=100) {
+        const points3d = [];
+        const pointsSky = [];
+        for (let j = 0; j <= nPoints; j++) {
+            const nu = (j / nPoints) * 2 * Math.PI;
+            const pos = orbitPosition(nu, a, e);
+            points3d.push({ x: pos.x, y: pos.y });
+            const sky = toSkyFrame(pos.x, pos.y, i_rad, omega_rad);
+            pointsSky.push(sky);
+        }
+        return { points3d, pointsSky };
+    }
+
+    function draw3DOrbit(a, e, i_rad, omega_rad, nu_current) {
+        const ctx = ctx3d;
+        const w = orbit3dCanvas.width, h = orbit3dCanvas.height;
+        const cx = w/2, cy = h/2;
+        const scale = 80 / Math.max(a * 1.5, 1);
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Simple 3D projection: rotate the orbital plane for viewing
+        // View from slightly above and to the side
+        const viewAngle = 0.4;  // elevation
+        const { points3d } = computeOrbitPoints(a, e, i_rad, omega_rad);
+
+        // Draw orbital plane (tilted for 3D effect)
+        ctx.strokeStyle = 'rgba(100, 181, 246, 0.3)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        for (let j = 0; j < points3d.length; j++) {
+            const p = points3d[j];
+            // Apply viewing transform
+            const sky = toSkyFrame(p.x, p.y, i_rad, omega_rad);
+            const screenX = cx + sky.X * scale;
+            const screenY = cy - (sky.Y * Math.cos(viewAngle) + sky.Z * Math.sin(viewAngle)) * scale;
+            if (j === 0) ctx.moveTo(screenX, screenY);
+            else ctx.lineTo(screenX, screenY);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Draw orbit with depth shading
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let j = 0; j < points3d.length; j++) {
+            const p = points3d[j];
+            const sky = toSkyFrame(p.x, p.y, i_rad, omega_rad);
+            const depth = sky.Z;
+            const alpha = 0.3 + 0.7 * (depth / (a * 1.5) + 1) / 2;
+            ctx.strokeStyle = `rgba(78, 205, 196, ${alpha})`;
+            const screenX = cx + sky.X * scale;
+            const screenY = cy - (sky.Y * Math.cos(viewAngle) + sky.Z * Math.sin(viewAngle)) * scale;
+            if (j === 0) ctx.moveTo(screenX, screenY);
+            else ctx.lineTo(screenX, screenY);
+        }
+        ctx.stroke();
+
+        // Star at focus
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Current planet position
+        const pos = orbitPosition(nu_current, a, e);
+        const sky = toSkyFrame(pos.x, pos.y, i_rad, omega_rad);
+        const planetX = cx + sky.X * scale;
+        const planetY = cy - (sky.Y * Math.cos(viewAngle) + sky.Z * Math.sin(viewAngle)) * scale;
+
+        ctx.fillStyle = '#4ecdc4';
+        ctx.beginPath();
+        ctx.arc(planetX, planetY, 7, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Labels
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`a = ${a.toFixed(2)} AU`, cx, h - 15);
+        ctx.fillText(`i = ${(i_rad * 180 / Math.PI).toFixed(0)}°`, cx, 20);
+
+        // Inclination indicator
+        ctx.strokeStyle = '#64b5f6';
+        ctx.lineWidth = 1.5;
+        const arrowLen = 40;
+        const arrowX = cx + arrowLen * Math.sin(i_rad) * 0.5;
+        const arrowY = cy - arrowLen * Math.cos(i_rad);
+        ctx.beginPath();
+        ctx.moveTo(cx, cy);
+        ctx.lineTo(arrowX, arrowY);
+        ctx.stroke();
+        ctx.fillStyle = '#64b5f6';
+        ctx.fillText('↑ to observer', cx + 50, cy - 30);
+    }
+
+    function drawSkyProjection(a, e, i_rad, omega_rad, nu_current) {
+        const ctx = ctxSky;
+        const w = skyProjCanvas.width, h = skyProjCanvas.height;
+        const cx = w/2, cy = h/2;
+        const scale = 80;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Grid
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        for (let r = 1; r <= 3; r++) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * scale / 2, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+        ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+        ctx.stroke();
+
+        // Projected orbit
+        const { pointsSky } = computeOrbitPoints(a, e, i_rad, omega_rad);
+
+        ctx.strokeStyle = '#4ecdc4';
+        ctx.lineWidth = 2.5;
+        ctx.beginPath();
+        for (let j = 0; j < pointsSky.length; j++) {
+            const p = pointsSky[j];
+            const screenX = cx + p.X * scale;
+            const screenY = cy - p.Y * scale;
+            if (j === 0) ctx.moveTo(screenX, screenY);
+            else ctx.lineTo(screenX, screenY);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Star
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Planet
+        const pos = orbitPosition(nu_current, a, e);
+        const sky = toSkyFrame(pos.x, pos.y, i_rad, omega_rad);
+        const inFront = sky.Z > 0;
+        ctx.fillStyle = inFront ? '#4ecdc4' : 'rgba(78, 205, 196, 0.5)';
+        ctx.beginPath();
+        ctx.arc(cx + sky.X * scale, cy - sky.Y * scale, inFront ? 7 : 5, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Projected sma indicator
+        const projSma = projectedSma(a, i_rad, e, omega_rad);
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Proj. size: ${(projSma * 100).toFixed(0)} mas`, cx, h - 15);
+        ctx.fillText('Sky plane (RA, Dec)', cx, 20);
+
+        // DI label
+        ctx.fillStyle = 'rgba(78, 205, 196, 0.3)';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Direct Imaging sees this', cx, h - 35);
+    }
+
+    function drawWobble(a, e, i_rad, omega_rad, pmass, nu_current) {
+        const ctx = ctxWobble;
+        const w = wobbleCanvas.width, h = wobbleCanvas.height;
+        const cx = w/2, cy = h/2;
+
+        ctx.clearRect(0, 0, w, h);
+
+        // Stellar wobble is opposite to planet, scaled by mass ratio
+        // wobble_star = -(M_p / M_star) * r_planet
+        const massRatio = pmass * 3e-6 / config.starMass;  // Earth masses to solar
+        const wobbleScale = 8000;  // exaggerate for visibility
+
+        // Grid in microarcsec
+        ctx.strokeStyle = 'rgba(255,255,255,0.1)';
+        ctx.lineWidth = 1;
+        for (let r = 1; r <= 3; r++) {
+            ctx.beginPath();
+            ctx.arc(cx, cy, r * 30, 0, Math.PI * 2);
+            ctx.stroke();
+        }
+        ctx.beginPath();
+        ctx.moveTo(0, cy); ctx.lineTo(w, cy);
+        ctx.moveTo(cx, 0); ctx.lineTo(cx, h);
+        ctx.stroke();
+
+        // Wobble trajectory
+        const { pointsSky } = computeOrbitPoints(a, e, i_rad, omega_rad, 200);
+
+        ctx.strokeStyle = '#ff6b6b';
+        ctx.lineWidth = 2;
+        ctx.beginPath();
+        for (let j = 0; j < pointsSky.length; j++) {
+            const p = pointsSky[j];
+            // Stellar wobble is opposite direction, scaled by mass ratio
+            const wobbleX = -p.X * massRatio * wobbleScale;
+            const wobbleY = -p.Y * massRatio * wobbleScale;
+            const screenX = cx + wobbleX;
+            const screenY = cy - wobbleY;
+            if (j === 0) ctx.moveTo(screenX, screenY);
+            else ctx.lineTo(screenX, screenY);
+        }
+        ctx.closePath();
+        ctx.stroke();
+
+        // Current star position
+        const pos = orbitPosition(nu_current, a, e);
+        const sky = toSkyFrame(pos.x, pos.y, i_rad, omega_rad);
+        const starWobbleX = -sky.X * massRatio * wobbleScale;
+        const starWobbleY = -sky.Y * massRatio * wobbleScale;
+
+        ctx.fillStyle = '#ffd700';
+        ctx.beginPath();
+        ctx.arc(cx + starWobbleX, cy - starWobbleY, 8, 0, Math.PI * 2);
+        ctx.fill();
+
+        // Mean position marker
+        ctx.strokeStyle = 'rgba(255,255,255,0.3)';
+        ctx.beginPath();
+        ctx.arc(cx, cy, 3, 0, Math.PI * 2);
+        ctx.stroke();
+
+        // Wobble amplitude
+        const wobbleAmpAU = a * massRatio;
+        const wobbleAmpMuas = wobbleAmpAU * config.muasPerAU * 1000;  // to μas
+
+        ctx.fillStyle = '#888';
+        ctx.font = '11px sans-serif';
+        ctx.textAlign = 'center';
+        ctx.fillText(`Wobble: ${wobbleAmpMuas.toFixed(1)} μas`, cx, h - 15);
+        ctx.fillText('Stellar reflex motion', cx, 20);
+
+        // Astrometry label
+        ctx.fillStyle = 'rgba(255, 107, 107, 0.3)';
+        ctx.font = 'bold 14px sans-serif';
+        ctx.fillText('Astrometry sees this', cx, h - 35);
+    }
+
+    function updateMetrics() {
+        const i_rad = state.inclination * Math.PI / 180;
+        const omega_rad = state.argperi * Math.PI / 180;
+
+        const projSma = projectedSma(state.sma, i_rad, state.ecc, omega_rad);
+        const massRatio = state.pmass * 3e-6 / config.starMass;
+        const wobbleAmpAU = state.sma * massRatio;
+        const wobbleAmpMuas = wobbleAmpAU * config.muasPerAU * 1000;
+
+        document.getElementById('projSma').textContent = `${(projSma * 100).toFixed(1)} mas`;
+        document.getElementById('trueSma').textContent = `${state.sma.toFixed(2)} AU`;
+        document.getElementById('wobbleAmp').textContent = `${wobbleAmpMuas.toFixed(1)} μas`;
+        document.getElementById('inferredMass').textContent = `${state.pmass.toFixed(1)} M⊕`;
+
+        // If we only knew projected sma (DI alone), we'd infer wrong mass
+        // Assume we mistakenly use projected sma as true sma
+        const wrongMass = state.pmass * (projSma / state.sma);
+        document.getElementById('inferredMassDegen').textContent = `${wrongMass.toFixed(1)} M⊕`;
+    }
+
+    function render() {
+        const i_rad = state.inclination * Math.PI / 180;
+        const omega_rad = state.argperi * Math.PI / 180;
+
+        // Compute current true anomaly from time
+        const period = 1;  // normalized
+        const M = (state.time / period) * 2 * Math.PI;
+        const E = solveKepler(M, state.ecc);
+        const nu = trueAnomaly(E, state.ecc);
+
+        draw3DOrbit(state.sma, state.ecc, i_rad, omega_rad, nu);
+        drawSkyProjection(state.sma, state.ecc, i_rad, omega_rad, nu);
+        drawWobble(state.sma, state.ecc, i_rad, omega_rad, state.pmass, nu);
+        updateMetrics();
+    }
+
+    function animate(timestamp) {
+        if (!state.playing) return;
+        if (state.lastTimestamp === 0) state.lastTimestamp = timestamp;
+        const dt = (timestamp - state.lastTimestamp) / 1000;
+        state.lastTimestamp = timestamp;
+        state.time += dt * config.animSpeed;
+        if (state.time > 1) state.time -= 1;
+        render();
+        state.animationId = requestAnimationFrame(animate);
+    }
+
+    // Event handlers
+    document.getElementById('inclination').addEventListener('input', function() {
+        state.inclination = parseFloat(this.value);
+        document.getElementById('incValue').textContent = this.value;
+
+        if (state.degeneracyMode && state.lockedProjSma !== null) {
+            // Adjust a to maintain projected sma
+            const i_rad = state.inclination * Math.PI / 180;
+            const omega_rad = state.argperi * Math.PI / 180;
+            const newSma = smaForProjection(state.lockedProjSma, i_rad, state.ecc, omega_rad);
+            state.sma = Math.max(0.5, Math.min(3, newSma));
+            document.getElementById('sma').value = state.sma;
+            document.getElementById('smaValue').textContent = state.sma.toFixed(2);
+        }
+        render();
+    });
+
+    document.getElementById('sma').addEventListener('input', function() {
+        state.sma = parseFloat(this.value);
+        document.getElementById('smaValue').textContent = state.sma.toFixed(2);
+        if (state.degeneracyMode) {
+            const i_rad = state.inclination * Math.PI / 180;
+            const omega_rad = state.argperi * Math.PI / 180;
+            state.lockedProjSma = projectedSma(state.sma, i_rad, state.ecc, omega_rad);
+        }
+        render();
+    });
+
+    document.getElementById('ecc').addEventListener('input', function() {
+        state.ecc = parseFloat(this.value);
+        document.getElementById('eccValue').textContent = state.ecc.toFixed(2);
+        render();
+    });
+
+    document.getElementById('argperi').addEventListener('input', function() {
+        state.argperi = parseFloat(this.value);
+        document.getElementById('argperiValue').textContent = this.value;
+        render();
+    });
+
+    document.getElementById('pmass').addEventListener('input', function() {
+        state.pmass = parseFloat(this.value);
+        document.getElementById('pmassValue').textContent = this.value;
+        render();
+    });
+
+    document.getElementById('degeneracyToggle').addEventListener('click', function() {
+        state.degeneracyMode = !state.degeneracyMode;
+        this.classList.toggle('active', state.degeneracyMode);
+        if (state.degeneracyMode) {
+            const i_rad = state.inclination * Math.PI / 180;
+            const omega_rad = state.argperi * Math.PI / 180;
+            state.lockedProjSma = projectedSma(state.sma, i_rad, state.ecc, omega_rad);
+        }
+        document.getElementById('degeneracyInfo').innerHTML = state.degeneracyMode
+            ? '<b style="color:#4ecdc4">ON:</b> Sky projection locked! Change inclination and watch true a adjust to compensate. <span class="warning">Wobble amplitude changes!</span>'
+            : '<b>OFF:</b> Changing i changes the sky projection.<br><br><b>ON:</b> Adjusts a to keep the projected semi-major axis constant.';
+        render();
+    });
+
+    document.getElementById('playPause').addEventListener('click', function() {
+        state.playing = !state.playing;
+        this.textContent = state.playing ? '⏸ Pause' : '▶ Play';
+        if (state.playing) {
+            state.lastTimestamp = 0;
+            state.animationId = requestAnimationFrame(animate);
+        }
+    });
+
+    document.getElementById('reset').addEventListener('click', function() {
+        state.time = 0;
+        render();
+    });
+
+    // Initialize
+    render();
+    </script>
+</body>
+</html>

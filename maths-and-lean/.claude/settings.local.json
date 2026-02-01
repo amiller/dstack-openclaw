@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "WebFetch(domain:arxiv.org)",
+      "Bash(curl:*)",
+      "Bash(git clone:*)",
+      "Bash(python fisher_di_astrometry.py:*)"
+    ]
+  }
+}

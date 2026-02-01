@@ -4,8 +4,9 @@
   "description": "Private data collaboration via TEE attestation",
   "main": "server/server.js",
   "scripts": {
-    "start": "node server/server.js",
-    "dev": "nodemon server/server.js",
+    "start": "node server/server-ephemeral.js",
+    "start:old": "node server/server.js",
+    "dev": "nodemon server/server-ephemeral.js",
     "test": "node datasets/test-datasets.js"
   },
   "keywords": [
@@ -18,6 +19,7 @@
   "author": "clawTEEdah",
   "license": "MIT",
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.32.1",
     "@phala/fn": "^0.2.22",
     "express": "^4.18.2",
     "phala": "^1.1.5"

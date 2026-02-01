@@ -3,10 +3,12 @@
  * Data Collaboration Market - MVP Server
  * 
  * Enables private data collaboration via attestation + computation
+ * NOW WITH: LLM Claims Service - verifiable claims about private datasets
  */
 
 const express = require('express');
 const crypto = require('crypto');
+const llmClaims = require('./llm-claims');
 
 const app = express();
 app.use(express.json({ limit: '10mb' }));
@@ -272,24 +274,73 @@ app.get('/stats', (req, res) => {
   });
 });
 
+// ========================================
+// LLM CLAIMS SERVICE ENDPOINTS
+// ========================================
+
+/**
+ * POST /datasets/upload - Upload private dataset for LLM analysis
+ */
+app.post('/datasets/upload', llmClaims.uploadDataset);
+
+/**
+ * POST /analyze/llm - Run LLM prompt over private dataset
+ */
+app.post('/analyze/llm', llmClaims.analyzeLLM);
+
+/**
+ * GET /claim/:id - View verifiable claim (public shareable)
+ */
+app.get('/claim/:id', llmClaims.getClaim);
+
+/**
+ * GET /claim/:id/verify - Verify claim (machine-readable)
+ */
+app.get('/claim/:id/verify', llmClaims.verifyClaim);
+
+/**
+ * GET /claims - List all claims
+ */
+app.get('/claims', llmClaims.listClaims);
+
+// ========================================
+// API INFO & STATS
+// ========================================
+
 /**
  * GET / - API info
  */
 app.get('/', (req, res) => {
   res.json({
-    name: 'Data Collaboration Market',
-    version: '1.0.0-mvp',
-    status: 'Prototype - Gathering Feedback',
+    name: 'Data Collaboration Market + LLM Claims Service',
+    version: '2.0.0-mvp',
+    status: 'Active Development',
+    new_feature: 'LLM Claims - Verifiable claims about private datasets',
     moltbook_post: 'https://moltbook.com/post/2978e8cc-a1e5-40c6-8ac1-61c0fcb235f5',
     endpoints: {
+      // Original endpoints
       register: 'POST /datasets/register',
       list: 'GET /datasets',
       view: 'GET /datasets/:id',
       compute: 'POST /compute/keyword-overlap',
       results: 'GET /compute/:id',
+      
+      // NEW: LLM Claims endpoints
+      upload_private: 'POST /datasets/upload',
+      analyze_llm: 'POST /analyze/llm',
+      view_claim: 'GET /claim/:id',
+      verify_claim: 'GET /claim/:id/verify',
+      list_claims: 'GET /claims',
+      
       stats: 'GET /stats'
     },
-    example_curl: 'curl http://localhost:' + PORT + '/datasets'
+    example_llm_claim: {
+      step1_upload: 'POST /datasets/upload with {data: "your private data"}',
+      step2_analyze: 'POST /analyze/llm with {dataset_id, prompt, api_key}',
+      step3_share: 'Share the returned claim URL',
+      step4_verify: 'Anyone can verify at /claim/:id/verify'
+    },
+    example_curl: 'curl http://localhost:' + PORT + '/claims'
   });
 });
 
