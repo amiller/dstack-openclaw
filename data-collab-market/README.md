@@ -1,26 +1,104 @@
-# Data Collaboration Market + LLM Claims Service
+# Ephemeral Sandbox Execution
 
-**Status:** ✨ NEW FEATURE - LLM Claims! Make verifiable claims about private datasets.
+**Verifiable one-time computation over private data**
 
-## The Vision
+## 🚀 Quick Start (5 minutes)
 
-**Info Bazaar Primitive:** Enable agents to make cryptographically verifiable claims about private datasets using LLM analysis in TEE. Anyone can verify claims WITHOUT seeing raw data.
+**Easiest way: GitHub Actions demo**
 
-### What's New: LLM Claims Service
+1. Fork this repo
+2. Add secrets (ANTHROPIC_API_KEY + sample dataset)
+3. Run workflow
+4. Get shareable certificate URL
 
-Make claims like:
-- "My dataset has 60% positive sentiment" → Verifiable proof
-- "This data contains no PII" → Compliance certification  
-- "My model achieves 95% accuracy" → Performance proof
-- "I have data relevant to query X" → Data marketplace primitive
+👉 **[GitHub Actions Quick Start](GITHUB-ACTIONS-QUICKSTART.md)** ← Start here!
 
-**How it works:**
-1. Upload private dataset → Encrypted in TEE
-2. Submit LLM prompt (public) + API key
-3. TEE runs analysis → Generates signed claim
-4. Share claim URL → Anyone verifies WITHOUT seeing data
+## The Concept
 
-👉 **[Quick Start Guide](examples/QUICKSTART.md)**
+**NOT a data registry. NOT storage.**  
+**Ephemeral execution with permanent proof.**
+
+```
+Load dataset → Run computation → Delete data → Keep certificate
+```
+
+### Why This Matters
+
+**Traditional approach:**
+- "Trust me, I ran this analysis on private data"
+- No verification possible
+
+**Ephemeral sandbox:**
+- Verifiable execution certificate
+- Anyone can check it happened
+- Private data never exposed (deleted immediately)
+
+### Use Cases
+
+- **Research:** "My model achieves 95% accuracy" (prove without test data)
+- **Compliance:** "Dataset contains no PII" (certify without exposure)
+- **Quality:** "Data is <1% missing" (assess without revealing)
+- **Benchmarking:** "Engagement rate is 47%" (claim without customer data)
+- **Info Bazaar:** "Data relevant to query X" (prove value before purchase)
+
+## Three Ways to Run
+
+### 1. GitHub Actions (Recommended for demos)
+
+**Benefits:**
+- ✅ Free, familiar, fast
+- ✅ Public execution logs
+- ✅ Built-in secrets management
+- ✅ Anyone can verify
+
+**Setup:** 5 minutes  
+**Trust:** GitHub infrastructure  
+**Guide:** [GITHUB-ACTIONS-QUICKSTART.md](GITHUB-ACTIONS-QUICKSTART.md)
+
+### 2. Local Server (Development)
+
+**Benefits:**
+- ✅ Full control
+- ✅ Fast iteration
+- ⚠️  Simulated TEE only
+
+**Setup:**
+```bash
+npm install
+npm start  # Port 3003
+./examples/ephemeral-demo.sh
+```
+
+**Guide:** [README-EPHEMERAL.md](README-EPHEMERAL.md)
+
+### 3. dstack TEE (Production - Coming Soon)
+
+**Benefits:**
+- ✅ Real Intel TDX attestation
+- ✅ Cryptographic proof
+- ✅ Hardware isolation
+
+**Setup:** 30 minutes  
+**Trust:** CPU manufacturer  
+**Guide:** Coming in Phase 2
+
+## Documentation
+
+- **[GITHUB-ACTIONS-QUICKSTART.md](GITHUB-ACTIONS-QUICKSTART.md)** - 5-minute demo
+- **[ARCHITECTURE-EPHEMERAL.md](ARCHITECTURE-EPHEMERAL.md)** - Full architecture
+- **[README-EPHEMERAL.md](README-EPHEMERAL.md)** - Local server guide
+- **[GITHUB-ACTIONS-DEMO.md](GITHUB-ACTIONS-DEMO.md)** - GitHub Actions deep dive
+
+## Info Bazaar Primitive
+
+This implements the core primitive for private data marketplaces:
+
+1. **Discovery:** "I have data about X"
+2. **Verification:** Prove it (without exposing data)
+3. **Transaction:** Buy access
+4. **Computation:** TEE mediates analysis
+
+**Status:** Discovery + Verification ✅ | Transaction + Computation (Phase 2)
 
 ## MVP Scope (This Weekend)
 

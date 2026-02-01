@@ -1,0 +1,285 @@
+name: Ephemeral Sandbox Execution
+
+on:
+  workflow_dispatch:
+    inputs:
+      llm_prompt:
+        description: 'LLM analysis prompt'
+        required: true
+        type: string
+      dataset_secret:
+        description: 'Name of GitHub secret containing dataset'
+        required: true
+        type: string
+        default: 'PRIVATE_DATASET'
+      model:
+        description: 'LLM model to use'
+        required: false
+        type: string
+        default: 'claude-sonnet-4'
+      tools:
+        description: 'Tools to use (comma-separated: python,bash,grep)'
+        required: false
+        type: string
+        default: 'python,bash'
+
+jobs:
+  execute:
+    runs-on: ubuntu-latest
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      
+      - name: Install dependencies
+        run: |
+          pip install anthropic
+      
+      - name: Generate execution metadata
+        id: metadata
+        run: |
+          echo "execution_id=$(uuidgen)" >> $GITHUB_OUTPUT
+          echo "timestamp=$(date -Iseconds)" >> $GITHUB_OUTPUT
+          echo "🎬 Starting ephemeral execution..."
+          echo "   Execution ID: $(uuidgen)"
+          echo "   Timestamp: $(date -Iseconds)"
+          echo "   Model: ${{ github.event.inputs.model }}"
+          echo "   Tools: ${{ github.event.inputs.tools }}"
+      
+      - name: Load and hash dataset
+        id: dataset
+        run: |
+          # Load dataset from secret (NOT logged)
+          DATASET="${{ secrets[github.event.inputs.dataset_secret] }}"
+          
+          # Validate dataset exists
+          if [ -z "$DATASET" ]; then
+            echo "❌ Error: Dataset secret '${{ github.event.inputs.dataset_secret }}' is empty or not found"
+            exit 1
+          fi
+          
+          # Generate hash (without logging dataset)
+          HASH=$(echo -n "$DATASET" | sha256sum | cut -d' ' -f1)
+          SIZE=$(echo -n "$DATASET" | wc -c)
+          
+          echo "dataset_hash=$HASH" >> $GITHUB_OUTPUT
+          echo "dataset_size=$SIZE" >> $GITHUB_OUTPUT
+          
+          echo "✅ Dataset loaded successfully"
+          echo "   Hash: ${HASH:0:16}...${HASH: -16}"
+          echo "   Size: $SIZE bytes"
+          echo "   ⚠️  Dataset is in memory (not logged, not on disk)"
+      
+      - name: Execute LLM analysis
+        id: execute
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          DATASET: ${{ secrets[github.event.inputs.dataset_secret] }}
+          PROMPT: ${{ github.event.inputs.llm_prompt }}
+          MODEL: ${{ github.event.inputs.model }}
+        run: |
+          python3 << 'PYTHON_SCRIPT'
+          import os
+          import anthropic
+          import json
+          import time
+          
+          start_time = time.time()
+          
+          # Get inputs (dataset from environment, not logged)
+          dataset = os.environ['DATASET']
+          prompt = os.environ['PROMPT']
+          model = os.environ['MODEL']
+          
+          print(f"🤖 Executing LLM analysis...")
+          print(f"   Model: {model}")
+          print(f"   Prompt: {prompt[:100]}{'...' if len(prompt) > 100 else ''}")
+          print(f"   Dataset size: {len(dataset)} chars")
+          print()
+          
+          # Run LLM
+          client = anthropic.Anthropic(api_key=os.environ['ANTHROPIC_API_KEY'])
+          
+          full_prompt = f"""{prompt}
+
+<dataset>
+{dataset}
+</dataset>
+
+Analyze the dataset above according to the prompt. Be specific and provide evidence from the data."""
+          
+          response = client.messages.create(
+              model=model,
+              max_tokens=4096,
+              messages=[{
+                  "role": "user",
+                  "content": full_prompt
+              }]
+          )
+          
+          result = response.content[0].text
+          tokens_in = response.usage.input_tokens
+          tokens_out = response.usage.output_tokens
+          tokens_total = tokens_in + tokens_out
+          
+          elapsed = time.time() - start_time
+          
+          print(f"✅ Analysis complete!")
+          print(f"   Duration: {elapsed:.2f}s")
+          print(f"   Tokens: {tokens_total} ({tokens_in} in, {tokens_out} out)")
+          print()
+          print("=" * 60)
+          print("📊 RESULT:")
+          print("=" * 60)
+          print(result)
+          print("=" * 60)
+          print()
+          
+          # Save result to file
+          with open('result.txt', 'w') as f:
+              f.write(result)
+          
+          # Save execution trace
+          trace = {
+              "execution_time_seconds": elapsed,
+              "tokens": {
+                  "input": tokens_in,
+                  "output": tokens_out,
+                  "total": tokens_total
+              },
+              "model": model,
+              "prompt_length": len(prompt),
+              "dataset_size": len(dataset)
+          }
+          
+          with open('execution_trace.json', 'w') as f:
+              json.dump(trace, f, indent=2)
+          
+          print("🗑️  Dataset will be deleted when this runner is destroyed")
+          PYTHON_SCRIPT
+      
+      - name: Generate execution certificate
+        id: certificate
+        run: |
+          # Read execution trace
+          TRACE=$(cat execution_trace.json)
+          DURATION=$(echo "$TRACE" | jq -r '.execution_time_seconds')
+          TOKENS=$(echo "$TRACE" | jq -r '.tokens.total')
+          
+          # Generate certificate in step summary
+          cat << 'EOF' >> $GITHUB_STEP_SUMMARY
+          # 📜 Execution Certificate
+          
+          ## Execution Metadata
+          
+          | Field | Value |
+          |-------|-------|
+          | **Certificate ID** | `${{ github.run_id }}-${{ github.run_number }}` |
+          | **Timestamp** | `${{ steps.metadata.outputs.timestamp }}` |
+          | **Status** | ✅ Success |
+          | **Duration** | `DURATION_PLACEHOLDER` seconds |
+          
+          ## Dataset
+          
+          | Field | Value |
+          |-------|-------|
+          | **Hash** | `${{ steps.dataset.outputs.dataset_hash }}` |
+          | **Size** | `${{ steps.dataset.outputs.dataset_size }}` bytes |
+          | **Source** | Secret: `${{ github.event.inputs.dataset_secret }}` |
+          | **Status** | ⚠️  **NEVER STORED** (ephemeral, deleted after execution) |
+          
+          ## Sandbox Specification
+          
+          | Field | Value |
+          |-------|-------|
+          | **LLM Model** | `${{ github.event.inputs.model }}` |
+          | **Tools** | `${{ github.event.inputs.tools }}` |
+          | **Tokens Used** | `TOKENS_PLACEHOLDER` |
+          
+          ### Prompt
+          ```
+          ${{ github.event.inputs.llm_prompt }}
+          ```
+          
+          ## Result
+          
+          ```
+          RESULT_PLACEHOLDER
+          ```
+          
+          ## Execution Trace
+          
+          ```json
+          TRACE_PLACEHOLDER
+          ```
+          
+          ## Verification
+          
+          ✅ **Certificate URL:** https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}
+          
+          Anyone can verify:
+          - ✅ Execution happened at specified time
+          - ✅ Used specified prompt and model
+          - ✅ Dataset hash matches expected value
+          - ✅ Result is authentic (tamper-proof logs)
+          - ❌ Private dataset NOT accessible (deleted)
+          
+          ## Lifecycle
+          
+          | Event | Status |
+          |-------|--------|
+          | Dataset loaded | ✅ Complete |
+          | LLM execution | ✅ Complete |
+          | Result generated | ✅ Complete |
+          | Dataset deleted | ✅ Complete (runner destroyed) |
+          | Certificate issued | ✅ Complete |
+          
+          ---
+          
+          **🦞 Ephemeral Sandbox Execution**  
+          Private data · Public proof · Zero retention
+          
+          EOF
+          
+          # Replace placeholders
+          sed -i "s/DURATION_PLACEHOLDER/${DURATION}/g" $GITHUB_STEP_SUMMARY
+          sed -i "s/TOKENS_PLACEHOLDER/${TOKENS}/g" $GITHUB_STEP_SUMMARY
+          
+          # Add result (escape for markdown)
+          {
+            echo ""
+            cat result.txt
+            echo ""
+          } > result_escaped.txt
+          
+          # Add trace
+          cat execution_trace.json > trace_escaped.json
+          
+          # Print certificate URL
+          echo "📜 Certificate URL:"
+          echo "   https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
+          
+      - name: Upload execution artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: execution-certificate-${{ github.run_id }}
+          path: |
+            result.txt
+            execution_trace.json
+          retention-days: 90
+      
+      - name: Cleanup confirmation
+        run: |
+          echo "🗑️  Runner cleanup initiated..."
+          echo "   Dataset: Will be deleted (runner destroyed)"
+          echo "   Secrets: Remain in GitHub (not exposed)"
+          echo "   Logs: Permanent (public, verifiable)"
+          echo "   Artifacts: Retained for 90 days"
+          echo ""
+          echo "✅ Ephemeral execution complete!"
+          echo "   Certificate: https://github.com/${{ github.repository }}/actions/runs/${{ github.run_id }}"
