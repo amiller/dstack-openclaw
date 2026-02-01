@@ -165,8 +165,108 @@ The twenty questions game demonstrates that:
 
 ---
 
+---
+
+## Critical Auditor Question (from Andrew)
+
+**Q:** "How do you know the log you downloaded wasn't tampered with and I didn't leak the dev key to someone else who snuck in other commands and polluted his workspace?"
+
+**A: This exposes a GAP in my audit!** ⚠️
+
+### What I Verified
+✅ The genesis log I downloaded doesn't contain "smartphone" in initialization  
+✅ The attestation exists and has a valid TDX quote  
+✅ The compose-hash matches a deployment configuration
+
+### What I DIDN'T Verify
+❌ **Cryptographic binding** between the genesis log hash and the attestation  
+❌ **Freshness** - is this the current genesis log or an old snapshot?  
+❌ **Integrity** - proof the log wasn't tampered with
+
+### The Missing Step
+
+**What I should have done:**
+1. Compute SHA256 of the genesis log I downloaded
+2. Request a TDX quote with `report_data=0xgenesis:<hash>`
+3. Verify the quote's `report_data` matches my computed hash
+4. Verify the quote signature with Intel's public keys
+
+**Why this matters:**
+Without cryptographic verification, I'm trusting:
+- The HTTPS connection (could be MitM'd)
+- The proxy logs (could be forged)
+- The timestamps (could be backdated)
+
+**The proper audit flow:**
+```bash
+# 1. Download genesis log
+GENESIS=$(curl https://.../genesis)
+
+# 2. Compute hash
+HASH=$(echo "$GENESIS" | sha256sum | cut -d' ' -f1)
+
+# 3. Request attestation with this hash
+curl --unix-socket /var/run/dstack-proxy.sock \
+  "http://localhost/GetQuote?report_data=0xgenesis:$HASH"
+
+# 4. Verify TDX quote signature
+# 5. Check report_data in quote matches our hash
+```
+
+### Current Status of Genesis Log
+
+**Dynamic hash problem:** The genesis log GROWS over time (each message appended).
+
+From proxy logs:
+- Latest hash: `4e62ddf0bea735a7...` (after my Question 6)
+- Hash I computed: `bda0768c6339075e...` (current download)
+
+**These don't match!** This could mean:
+1. The log grew between proxy's last hash and my download
+2. The log is still being appended to
+3. I need to fetch the hash atomically with the log
+
+### Proper Verification Architecture
+
+**Option 1: Snapshot Attestation**
+- Proxy serves `/genesis-snapshot` endpoint
+- Returns: `{log: [...], hash: "...", quote: {...}}`
+- All computed atomically
+- Quote proves hash matches log at that instant
+
+**Option 2: Incremental Attestation**
+- Each message gets its own attestation
+- Genesis log is a Merkle tree
+- Can verify any subset of messages
+
+**Current Implementation:**
+The proxy DOES compute incremental hashes (visible in logs), but:
+- ❌ No public endpoint to get attested snapshot
+- ❌ No way for external auditor to verify cryptographically
+- ❌ Relying on HTTPS trust
+
+### Assessment Update
+
+**Previous verdict: VERIFIED ✅**  
+**Correct verdict: TRUST-BASED ⚠️**
+
+I verified that IF the log is genuine, THEN it doesn't contain pre-programming.
+
+I did NOT verify the log is genuine via cryptographic attestation.
+
+**Trust assumptions I'm making:**
+1. HTTPS isn't MitM'd
+2. Phala Cloud isn't serving fake logs
+3. The proxy hash logs are honest
+4. No one with DEV_KEY polluted the workspace
+
+**To actually verify:** Need to implement snapshot attestation endpoint or use the proxy's domain separation properly.
+
+---
+
 **Audited by:** MoltyClaw47  
 **Date:** 2026-02-01 09:29 EST  
+**Updated:** 2026-02-01 09:35 EST (critical gap identified)  
 **Tools Used:**
 - curl (fetch attestation + genesis log)
 - jq (parse JSON)
@@ -174,3 +274,5 @@ The twenty questions game demonstrates that:
 
 **Audit Log:** attestation-audit-report.md  
 **Game Log:** twenty-questions-game-log.md
+
+**Key Lesson:** Attestation verification requires cryptographic proof, not just reading logs over HTTPS! 🔐
