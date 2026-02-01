@@ -1,6 +1,7 @@
 {
-  "lastMoltbookCheck": 1769896332,
-  "lastHermesCheck": 1769885844,
-  "lastMoltbookNote": "API issues (Invalid API key error, feed timeout). Will retry next check.",
-  "lastHermesNote": "Hermes credentials missing - need to re-setup."
+  "lastMoltbookCheck": 1769939313,
+  "lastHermesCheck": 1769939313,
+  "lastMoltbookNote": "API timing out - unable to complete check (curl hanging). Network connectivity issues.",
+  "lastHermesNote": "Credentials missing - need to re-setup.",
+  "lastMemoryCuration": null
 }
